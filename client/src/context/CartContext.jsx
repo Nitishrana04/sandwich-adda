@@ -85,8 +85,13 @@ export const CartProvider = ({ children }) => {
     setItems((prev) => {
       return prev
         .map((i) => {
-          const itemId = i.cartItemId || i.id;
-          if (itemId === id) {
+          const isMatch = (
+            i.cartItemId === id ||
+            i.id === id ||
+            (i.cartItemId && id && i.cartItemId.startsWith(`${id}_`)) ||
+            (id && i.cartItemId && id.startsWith(`${i.id}_`))
+          );
+          if (isMatch) {
             const nextQty = i.quantity + delta;
             return nextQty > 0 ? { ...i, quantity: nextQty } : null;
           }
@@ -97,7 +102,15 @@ export const CartProvider = ({ children }) => {
   };
 
   const removeFromCart = (id) => {
-    setItems((prev) => prev.filter((i) => (i.cartItemId || i.id) !== id));
+    setItems((prev) => prev.filter((i) => {
+      const isMatch = (
+        i.cartItemId === id ||
+        i.id === id ||
+        (i.cartItemId && id && i.cartItemId.startsWith(`${id}_`)) ||
+        (id && i.cartItemId && id.startsWith(`${i.id}_`))
+      );
+      return !isMatch;
+    }));
   };
 
   const clearCart = () => {
@@ -140,8 +153,8 @@ export const CartProvider = ({ children }) => {
         body: JSON.stringify({ code: code.trim(), amount: subtotal })
       });
       const data = await res.json();
-      if (!res.ok) {
-        return { success: false, message: data.message || 'Invalid coupon' };
+      if (!res.ok || !data.success) {
+        return { success: false, message: data.message || 'Invalid coupon code' };
       }
       setCoupon(data);
       return { success: true, message: data.message };

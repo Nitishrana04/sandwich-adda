@@ -349,18 +349,74 @@ export function addRider(riderData) {
 }
 
 // ------------------- COUPONS METHODS -------------------
+const DEFAULT_COUPONS = [
+  {
+    code: 'NEWUSER50',
+    discountType: 'FLAT',
+    discountValue: 50,
+    minOrder: 99,
+    description: 'Flat ₹50 OFF on orders above ₹99'
+  },
+  {
+    code: 'WEEKEND20',
+    discountType: 'PERCENT',
+    discountValue: 20,
+    minOrder: 99,
+    description: '20% instant discount on weekend orders above ₹99'
+  },
+  {
+    code: 'ADDAFREE',
+    discountType: 'DELIVERY',
+    discountValue: 30,
+    minOrder: 79,
+    description: 'Free Delivery on orders above ₹79'
+  },
+  {
+    code: 'FIRSTADDA',
+    discountType: 'FLAT',
+    discountValue: 50,
+    minOrder: 99,
+    description: 'Flat ₹50 OFF on your first order'
+  },
+  {
+    code: 'FREEDEL',
+    discountType: 'DELIVERY',
+    discountValue: 30,
+    minOrder: 79,
+    description: 'Free Delivery on orders above ₹79'
+  },
+  {
+    code: 'CHEESE50',
+    discountType: 'FLAT',
+    discountValue: 50,
+    minOrder: 199,
+    description: 'Flat ₹50 OFF on orders above ₹199'
+  }
+];
+
 export function getCoupons() {
-  return db.coupons || [];
+  const merged = [...DEFAULT_COUPONS];
+  (db.coupons || []).forEach(c => {
+    if (!merged.some(m => m.code.toUpperCase() === c.code.toUpperCase())) {
+      merged.push(c);
+    }
+  });
+  return merged;
 }
 
 export function validateCoupon(code, subtotal) {
   const normalized = (code || '').trim().toUpperCase();
-  const coupon = (db.coupons || []).find(c => c.code.toUpperCase() === normalized);
+  const allCoupons = getCoupons();
+  const coupon = allCoupons.find(c => c.code.toUpperCase() === normalized);
   if (!coupon) {
-    return { valid: false, message: 'Invalid coupon code.' };
+    return { valid: false, success: false, message: 'Invalid coupon code.' };
   }
   if (subtotal < coupon.minOrder) {
-    return { valid: false, message: `Minimum order amount of ₹${coupon.minOrder} required for ${coupon.code}.` };
+    return { 
+      valid: false, 
+      success: false, 
+      message: `Minimum order amount of ₹${coupon.minOrder} required for ${coupon.code}.` 
+    };
   }
   let discount = 0;
   if (coupon.discountType === 'FLAT') {
@@ -368,11 +424,14 @@ export function validateCoupon(code, subtotal) {
   } else if (coupon.discountType === 'PERCENT') {
     discount = Math.round((subtotal * coupon.discountValue) / 100);
   } else if (coupon.discountType === 'DELIVERY') {
-    discount = db.settings.deliveryFee || 30;
+    discount = db.settings?.deliveryFee || 30;
   }
   return {
     valid: true,
+    success: true,
     code: coupon.code,
+    discountType: coupon.discountType,
+    discountValue: coupon.discountValue,
     discount: Math.min(discount, subtotal),
     message: `${coupon.code} applied! Saved ₹${discount}`
   };

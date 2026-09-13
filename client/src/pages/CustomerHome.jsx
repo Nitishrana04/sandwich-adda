@@ -106,7 +106,7 @@ export default function CustomerHome() {
   const bestsellers = menu.filter((item) => item.isBestseller);
 
   const getItemQuantityInCart = (id) => {
-    const found = cartItems.find((i) => i.id === id);
+    const found = cartItems.find((i) => i.id === id || i.cartItemId === id || (i.cartItemId && i.cartItemId.startsWith(`${id}_`)));
     return found ? found.quantity : 0;
   };
 

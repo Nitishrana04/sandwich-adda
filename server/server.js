@@ -344,7 +344,7 @@ app.get('/api/coupons', (req, res) => {
 app.post('/api/coupons/validate', (req, res) => {
   try {
     const { code, amount } = req.body;
-    const result = db.validateCoupon(code, amount);
+    const result = db.validateCoupon(code, Number(amount) || 0);
     if (!result.valid) {
       return res.status(400).json(result);
     }

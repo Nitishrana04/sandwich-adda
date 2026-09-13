@@ -234,7 +234,8 @@ export default function CustomerCart() {
                   {/* Quantity controls */}
                   <div className="flex items-center bg-gray-100 rounded-lg overflow-hidden">
                     <button
-                      onClick={() => updateQuantity(item.id, -1)}
+                      type="button"
+                      onClick={() => updateQuantity(item.cartItemId || item.id, -1)}
                       className="px-2 py-1 text-gray-600 hover:bg-gray-200 active:bg-gray-300 transition-colors"
                     >
                       <Minus className="w-3.5 h-3.5" />
@@ -243,7 +244,8 @@ export default function CustomerCart() {
                       {item.quantity}
                     </span>
                     <button
-                      onClick={() => updateQuantity(item.id, 1)}
+                      type="button"
+                      onClick={() => updateQuantity(item.cartItemId || item.id, 1)}
                       className="px-2 py-1 text-gray-600 hover:bg-gray-200 active:bg-gray-300 transition-colors"
                     >
                       <Plus className="w-3.5 h-3.5" />

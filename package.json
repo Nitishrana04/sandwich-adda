@@ -1,0 +1,13 @@
+{
+  "name": "sandwich-adda",
+  "version": "1.0.0",
+  "description": "Sandwich Adda - Complete Food Ordering Platform (Customer, Admin & Delivery Partner)",
+  "scripts": {
+    "build": "cd client && npm install && npm run build && cd ../server && npm install",
+    "start": "cd server && node server.js",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install",
+    "server": "cd server && node server.js",
+    "client": "cd client && npm run dev",
+    "dev": "npx concurrently --kill-others \"npm run server\" \"npm run client\""
+  }
+}

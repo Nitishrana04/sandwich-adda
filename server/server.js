@@ -8,6 +8,8 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 
 import * as db from './db.js';
+import Razorpay from 'razorpay';
+import crypto from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -308,6 +310,157 @@ app.post('/api/orders/:id/verify-otp', (req, res) => {
     res.status(500).json({ error: err.message });
   }
 });
+
+// ------------------- RAZORPAY PAYMENT GATEWAY -------------------
+
+// Helper to initialize Razorpay instance dynamically with env vars
+function getRazorpayClient() {
+  const key_id = process.env.RAZORPAY_KEY_ID;
+  const key_secret = process.env.RAZORPAY_KEY_SECRET;
+  if (!key_id || !key_secret) {
+    const error = new Error('Razorpay credentials missing in environment variables');
+    error.statusCode = 500;
+    throw error;
+  }
+  return new Razorpay({ key_id, key_secret });
+}
+
+// Get Razorpay Public Key ID (safe for frontend)
+app.get('/api/razorpay/key', (req, res) => {
+  res.json({
+    success: true,
+    key_id: process.env.RAZORPAY_KEY_ID || ''
+  });
+});
+
+// STEP 1: Backend - Create Order
+// Endpoint: POST /api/create-order
+const handleCreateRazorpayOrder = async (req, res) => {
+  try {
+    const { amount, currency = 'INR', receipt, notes } = req.body;
+
+    const numericAmount = Number(amount);
+    // Validate amount >= 100 paise
+    if (!numericAmount || isNaN(numericAmount) || numericAmount < 100) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid amount. Minimum amount is 100 paise (₹1.00).'
+      });
+    }
+
+    const rzp = getRazorpayClient();
+    const options = {
+      amount: Math.round(numericAmount),
+      currency: currency || 'INR',
+      receipt: receipt || `rcpt_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      notes: notes || {}
+    };
+
+    const order = await rzp.orders.create(options);
+
+    return res.status(200).json({
+      success: true,
+      order_id: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      key_id: process.env.RAZORPAY_KEY_ID
+    });
+  } catch (err) {
+    console.error('Razorpay Create Order Error:', err);
+
+    // Handle auth failures (return 401)
+    if (
+      err.statusCode === 401 ||
+      err.status === 401 ||
+      (err?.error?.code === 'BAD_REQUEST_ERROR' && err?.error?.description?.toLowerCase().includes('auth'))
+    ) {
+      return res.status(401).json({
+        success: false,
+        error: 'Razorpay authentication failed. Please check your API keys.'
+      });
+    }
+
+    // Handle Razorpay API errors (return 500)
+    return res.status(err.statusCode || 500).json({
+      success: false,
+      error: err.error?.description || err.message || 'Failed to create Razorpay order'
+    });
+  }
+};
+
+app.post('/api/create-order', handleCreateRazorpayOrder);
+app.post('/api/razorpay/create-order', handleCreateRazorpayOrder);
+
+// STEP 3: Backend - Verify Signature
+// Endpoint: POST /api/verify-payment
+const handleVerifyRazorpayPayment = (req, res) => {
+  try {
+    const razorpay_order_id = req.body.razorpay_order_id || req.body.order_id;
+    const razorpay_payment_id = req.body.razorpay_payment_id || req.body.payment_id;
+    const razorpay_signature = req.body.razorpay_signature || req.body.signature;
+
+    // Missing fields: return 400
+    if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+      return res.status(400).json({
+        success: false,
+        verified: false,
+        error: 'Missing required payment verification fields: razorpay_order_id, razorpay_payment_id, razorpay_signature'
+      });
+    }
+
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+    if (!secret) {
+      return res.status(500).json({
+        success: false,
+        verified: false,
+        error: 'RAZORPAY_KEY_SECRET is not configured on the server'
+      });
+    }
+
+    // Algorithm: HMAC-SHA256(order_id + "|" + payment_id, KEY_SECRET)
+    const generated_signature = crypto
+      .createHmac('sha256', secret)
+      .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+      .digest('hex');
+
+    // Compare generated signature with razorpay_signature
+    if (generated_signature !== razorpay_signature) {
+      // Signature mismatch: return 400, do NOT mark as paid
+      return res.status(400).json({
+        success: false,
+        verified: false,
+        error: 'Payment verification failed: Invalid signature mismatch'
+      });
+    }
+
+    // Return success only if signatures match
+    if (req.body.storeOrderId) {
+      db.updateOrderPaymentStatus(req.body.storeOrderId, 'PAID', {
+        razorpay_order_id,
+        razorpay_payment_id,
+        razorpay_signature
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      verified: true,
+      message: 'Payment verified successfully',
+      order_id: razorpay_order_id,
+      payment_id: razorpay_payment_id
+    });
+  } catch (err) {
+    console.error('Razorpay Signature Verification Error:', err);
+    return res.status(500).json({
+      success: false,
+      verified: false,
+      error: err.message || 'Payment verification failed due to internal error'
+    });
+  }
+};
+
+app.post('/api/verify-payment', handleVerifyRazorpayPayment);
+app.post('/api/razorpay/verify-payment', handleVerifyRazorpayPayment);
 
 // 4. Riders
 app.get('/api/riders', (req, res) => {

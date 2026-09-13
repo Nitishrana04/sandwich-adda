@@ -212,10 +212,10 @@
       "vehicle": "Hero Splendor Plus (UP-15-AB-3371)",
       "status": "AVAILABLE",
       "avatar": "",
-      "totalDeliveries": 142,
+      "totalDeliveries": 143,
       "rating": 4.9,
       "activeOrderId": null,
-      "todayEarnings": 480
+      "todayEarnings": 520
     }
   ],
   "coupons": [
@@ -307,6 +307,135 @@
     }
   ],
   "orders": [
+    {
+      "id": "ord_1789319315014_5oyys",
+      "orderNumber": "#SA1029",
+      "customerId": "usr_cust_1789317779892",
+      "customerName": "Dhruv",
+      "customerPhone": "8077676400",
+      "deliveryAddress": "104, Rohta Road, Meerut, Uttar Pradesh - 250001",
+      "addressType": "Home",
+      "houseNo": "1024",
+      "landmark": "",
+      "latitude": 28.985941666666665,
+      "longitude": 77.664701,
+      "customerLocation": {
+        "lat": 28.985941666666665,
+        "lng": 77.664701
+      },
+      "instructions": "",
+      "cookingNote": "",
+      "items": [
+        {
+          "id": "menu_1",
+          "name": "Paneer Tikka Grilled Sandwich",
+          "price": 109,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=600&auto=format&fit=crop&q=80"
+        }
+      ],
+      "subtotal": 109,
+      "deliveryFee": 30,
+      "discount": 0,
+      "totalAmount": 139,
+      "couponCode": null,
+      "paymentMethod": "COD",
+      "paymentStatus": "PAID",
+      "status": "DELIVERED",
+      "deliveryOtp": "2931",
+      "assignedRiderId": "rider_1",
+      "assignedRiderName": "Rana Bhai (Nitish Rana)",
+      "createdAt": "2026-09-13T17:08:35.014Z",
+      "statusHistory": [
+        {
+          "status": "PLACED",
+          "time": "05:08 PM",
+          "note": "Order placed via COD. Kitchen received order."
+        },
+        {
+          "status": "ACCEPTED",
+          "time": "05:27 PM",
+          "note": "Sandwich Adda kitchen accepted order"
+        },
+        {
+          "status": "PREPARING",
+          "time": "05:27 PM",
+          "note": "Chef grilling fresh sandwiches in the kitchen 👨‍🍳"
+        },
+        {
+          "status": "READY_FOR_PICKUP",
+          "time": "05:27 PM",
+          "note": "Order packed hot and ready for pickup 🥪"
+        },
+        {
+          "status": "RIDER_ASSIGNED",
+          "time": "05:27 PM",
+          "note": "Delivery partner Rana Bhai (Nitish Rana) assigned to deliver."
+        },
+        {
+          "status": "PICKED_UP",
+          "time": "05:27 PM",
+          "note": "Delivery partner picked up food from Sandwich Adda"
+        },
+        {
+          "status": "OUT_FOR_DELIVERY",
+          "time": "05:28 PM",
+          "note": "Rider is on the way to your delivery location 🛵"
+        },
+        {
+          "status": "DELIVERED",
+          "time": "05:28 PM",
+          "note": "Delivered safely! OTP 2931 verified."
+        }
+      ],
+      "deliveredAt": "2026-09-13T17:28:34.075Z"
+    },
+    {
+      "id": "ord_1789319183306_sa7ju",
+      "orderNumber": "#SA1028",
+      "customerId": "cust_1789319183306",
+      "customerName": "Live Cloud Verified User",
+      "customerPhone": "9897633716",
+      "deliveryAddress": "Main Rohta Road, Meerut Doorstep",
+      "addressType": "Home",
+      "houseNo": "",
+      "landmark": "",
+      "latitude": 28.9875,
+      "longitude": 77.672,
+      "customerLocation": {
+        "lat": 28.9875,
+        "lng": 77.672
+      },
+      "instructions": "",
+      "cookingNote": "",
+      "items": [
+        {
+          "id": "s1",
+          "name": "Cheese Burst Sandwich",
+          "price": 109,
+          "quantity": 1
+        }
+      ],
+      "subtotal": 109,
+      "deliveryFee": 0,
+      "discount": 0,
+      "totalAmount": 109,
+      "couponCode": null,
+      "paymentMethod": "COD",
+      "paymentStatus": "PENDING",
+      "status": "PLACED",
+      "deliveryOtp": "5575",
+      "assignedRiderId": null,
+      "assignedRiderName": null,
+      "createdAt": "2026-09-13T17:06:23.306Z",
+      "statusHistory": [
+        {
+          "status": "PLACED",
+          "time": "05:06 PM",
+          "note": "Order placed via COD. Kitchen received order."
+        }
+      ]
+    },
     {
       "id": "ord_real_1027",
       "orderNumber": "#SA1027",

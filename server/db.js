@@ -525,7 +525,10 @@ export function createOrder(data) {
     totalAmount: Number(data.totalAmount) || 0,
     couponCode: data.couponCode || null,
     paymentMethod: data.paymentMethod || 'COD',
-    paymentStatus: data.paymentMethod === 'UPI' ? 'PAID' : 'PENDING',
+    paymentStatus: data.paymentStatus || (data.paymentMethod === 'ONLINE' || data.paymentMethod === 'UPI' ? 'PAID' : 'PENDING'),
+    razorpayOrderId: data.razorpayOrderId || data.razorpay_order_id || null,
+    razorpayPaymentId: data.razorpayPaymentId || data.razorpay_payment_id || null,
+    razorpaySignature: data.razorpaySignature || data.razorpay_signature || null,
     status: 'PLACED',
     deliveryOtp,
     assignedRiderId: null,
@@ -543,6 +546,23 @@ export function createOrder(data) {
   db.orders.unshift(newOrder);
   saveDb(db);
   return newOrder;
+}
+
+export function updateOrderPaymentStatus(orderId, paymentStatus, paymentMeta = {}) {
+  const order = (db.orders || []).find(o => o.id === orderId || o.orderNumber === orderId);
+  if (!order) return null;
+  order.paymentStatus = paymentStatus;
+  if (paymentMeta.razorpay_order_id || paymentMeta.razorpayOrderId) {
+    order.razorpayOrderId = paymentMeta.razorpay_order_id || paymentMeta.razorpayOrderId;
+  }
+  if (paymentMeta.razorpay_payment_id || paymentMeta.razorpayPaymentId) {
+    order.razorpayPaymentId = paymentMeta.razorpay_payment_id || paymentMeta.razorpayPaymentId;
+  }
+  if (paymentMeta.razorpay_signature || paymentMeta.razorpaySignature) {
+    order.razorpaySignature = paymentMeta.razorpay_signature || paymentMeta.razorpaySignature;
+  }
+  saveDb(db);
+  return order;
 }
 
 export function updateOrderStatus(orderId, newStatus, extra = {}) {

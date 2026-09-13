@@ -5,6 +5,30 @@ import { useSocket } from '../context/SocketContext';
 import { useCart } from '../context/CartContext';
 import LiveDeliveryMap from '../components/LiveDeliveryMap';
 
+class MapErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false };
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.warn('Map rendering caught by boundary:', error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="bg-stone-900 text-white p-5 rounded-3xl mb-6 text-center border border-stone-800">
+          <p className="text-sm font-bold text-orange-400">🛵 Live Express Delivery</p>
+          <p className="text-xs text-stone-300 mt-1">Delivery Partner is on the way to your delivery address.</p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 export default function CustomerOrderTracking() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -212,7 +236,9 @@ export default function CustomerOrderTracking() {
 
       {/* ------------------- INTERACTIVE LIVE REAL-TIME MAP (ROHTA ROAD & GOOGLE MAPS) ------------------- */}
       {!isCancelled && (
-        <LiveDeliveryMap order={order} liveLocation={liveRiderLocation} />
+        <MapErrorBoundary>
+          <LiveDeliveryMap order={order} liveLocation={liveRiderLocation} />
+        </MapErrorBoundary>
       )}
 
       {/* Live Order Progress Stepper */}

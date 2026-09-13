@@ -111,6 +111,7 @@ export default function LiveDeliveryMap({ order, liveLocation }) {
     }
   };
 
+  const riderPos = getCoordinatesFromStatus() || ROUTE_POINTS[0];
   const isDelivered = order?.status === 'DELIVERED';
 
   // Dynamic customer position if pinned on map

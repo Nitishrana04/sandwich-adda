@@ -11,8 +11,8 @@ export default function CustomerLogin() {
   const { sendCustomerOtp, verifyCustomerOtp } = useAuth();
   const { setCustomerInfo } = useCart();
 
-  const [phone, setPhone] = useState('9876543210');
-  const [name, setName] = useState('Rahul Sharma');
+  const [phone, setPhone] = useState('');
+  const [name, setName] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [otpNotice, setOtpNotice] = useState('');
@@ -32,7 +32,6 @@ export default function CustomerLogin() {
     if (res.success) {
       setOtpSent(true);
       setOtpNotice(res.message);
-      setOtp(res.demoOtp || '1234'); // Pre-fill test OTP for frictionless experience!
     } else {
       setError(res.message);
     }
@@ -57,23 +56,6 @@ export default function CustomerLogin() {
       navigate(from, { replace: true });
     } else {
       setError(res.message);
-    }
-  };
-
-  const handleQuickDemoLogin = async () => {
-    setLoading(true);
-    const res = await verifyCustomerOtp('9876543210', '1234', 'Rahul Sharma');
-    setLoading(false);
-
-    if (res.success) {
-      sound.playSuccess();
-      setCustomerInfo((prev) => ({
-        ...prev,
-        name: 'Rahul Sharma',
-        phone: '9876543210',
-        address: prev.address || 'Rohta Road, Meerut'
-      }));
-      navigate(from, { replace: true });
     }
   };
 
@@ -132,7 +114,7 @@ export default function CustomerLogin() {
                   required
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="Rahul Sharma"
+                  placeholder="Enter your name"
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:bg-white focus:outline-hidden focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
               </div>
@@ -150,7 +132,7 @@ export default function CustomerLogin() {
                   required
                   value={phone}
                   onChange={(e) => setPhone(e.target.value.replace(/\D/g, ''))}
-                  placeholder="9876543210"
+                  placeholder="Enter 10-digit number"
                   className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:bg-white focus:outline-hidden focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
                 />
               </div>
@@ -177,7 +159,7 @@ export default function CustomerLogin() {
                 required
                 value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, ''))}
-                placeholder="1234"
+                placeholder="••••"
                 className="w-full text-center text-3xl font-black tracking-widest py-3 border-2 border-orange-500 rounded-2xl bg-orange-50/30 focus:outline-hidden focus:ring-4 focus:ring-orange-500/20"
               />
             </div>
@@ -199,21 +181,6 @@ export default function CustomerLogin() {
             </button>
           </form>
         )}
-
-        {/* 1-Click Quick Demo Customer Login */}
-        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
-          <p className="text-[11px] font-bold text-gray-500 mb-2.5">
-            Testing / Instant Access:
-          </p>
-          <button
-            onClick={handleQuickDemoLogin}
-            type="button"
-            className="w-full py-2.5 bg-orange-50 hover:bg-orange-100 text-orange-900 border border-orange-200 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-orange-600" />
-            <span>1-Click Customer Login (Rahul Sharma)</span>
-          </button>
-        </div>
 
       </div>
 

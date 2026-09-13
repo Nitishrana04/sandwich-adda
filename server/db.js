@@ -604,7 +604,7 @@ export function authenticateAdmin(username, password) {
   const users = db.users || [];
   const admin = users.find(u => u.role === 'ADMIN' && u.username?.toLowerCase() === (username || '').toLowerCase().trim());
   if (!admin || admin.password !== password) {
-    return { success: false, message: 'Invalid Admin username or password (Default: admin / admin123)' };
+    return { success: false, message: 'Invalid Admin username or password.' };
   }
   return {
     success: true,
@@ -627,7 +627,7 @@ export function authenticateRider(phoneOrRiderId, pin) {
      u.name.toLowerCase() === (phoneOrRiderId || '').toLowerCase().trim())
   );
   if (!rider || rider.pin !== (pin || '').trim()) {
-    return { success: false, message: 'Invalid Rider credentials or PIN (Default PIN: 1234)' };
+    return { success: false, message: 'Invalid Rider credentials or PIN.' };
   }
   return {
     success: true,
@@ -656,8 +656,7 @@ export function sendCustomerOtp(phone) {
   
   return {
     success: true,
-    message: `OTP sent to +91 ${cleanPhone}. Use demo OTP: 1234`,
-    demoOtp: otp
+    message: `OTP sent successfully to +91 ${cleanPhone}.`
   };
 }
 
@@ -667,7 +666,7 @@ export function verifyCustomerOtp(phone, otp, name = '') {
   
   // Accept default 1234 or matching stored OTP
   if (otp !== '1234' && (!entry || entry.otp !== (otp || '').trim())) {
-    return { success: false, message: 'Incorrect OTP. Try 1234' };
+    return { success: false, message: 'Incorrect OTP. Please enter the valid code.' };
   }
 
   if (!db.users) db.users = [];
@@ -833,7 +832,7 @@ export function unifiedLogin(identifier, passwordOrOtp) {
   if (!valid && selectedUser.password) {
     return {
       success: false,
-      message: 'Incorrect password or OTP. (Default: 1234 or admin123)'
+      message: 'Incorrect password or OTP. Please check your credentials.'
     };
   }
 

@@ -26,14 +26,14 @@ export default function AuthGateway() {
     address: ''
   });
 
-  const [customerLoginPhone, setCustomerLoginPhone] = useState('9876543210');
-  const [customerLoginPassword, setCustomerLoginPassword] = useState('1234');
+  const [customerLoginPhone, setCustomerLoginPhone] = useState('');
+  const [customerLoginPassword, setCustomerLoginPassword] = useState('');
 
-  const [adminUsername, setAdminUsername] = useState('admin');
-  const [adminPassword, setAdminPassword] = useState('admin123');
+  const [adminUsername, setAdminUsername] = useState('');
+  const [adminPassword, setAdminPassword] = useState('');
 
-  const [riderIdentifier, setRiderIdentifier] = useState('9876543210');
-  const [riderPin, setRiderPin] = useState('1234');
+  const [riderIdentifier, setRiderIdentifier] = useState('');
+  const [riderPin, setRiderPin] = useState('');
 
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
@@ -104,37 +104,6 @@ export default function AuthGateway() {
       navigate('/rider', { replace: true }); // Opens Rider Dashboard
     } else {
       setError(res.message);
-    }
-  };
-
-  // Quick Demo Buttons
-  const handleQuickCustomerDemo = async () => {
-    setLoading(true);
-    const res = await loginCustomer('9876543210', '1234');
-    setLoading(false);
-    if (res.success) {
-      sound.playSuccess();
-      navigate('/', { replace: true });
-    }
-  };
-
-  const handleQuickAdminDemo = async () => {
-    setLoading(true);
-    const res = await loginAdmin('admin', 'admin123');
-    setLoading(false);
-    if (res.success) {
-      sound.playSuccess();
-      navigate('/admin', { replace: true });
-    }
-  };
-
-  const handleQuickRiderDemo = async (phone = '9876543210') => {
-    setLoading(true);
-    const res = await loginRider(phone, '1234');
-    setLoading(false);
-    if (res.success) {
-      sound.playSuccess();
-      navigate('/rider', { replace: true });
     }
   };
 
@@ -363,18 +332,6 @@ export default function AuthGateway() {
                   </button>
                 </form>
               )}
-
-              {/* 1-Click Quick Demo */}
-              <div className="mt-4 pt-4 border-t border-stone-800 text-center">
-                <button
-                  onClick={handleQuickCustomerDemo}
-                  type="button"
-                  className="w-full py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
-                >
-                  <KeyRound className="w-3.5 h-3.5 text-orange-400" />
-                  <span>1-Click Demo Customer (Rahul Sharma)</span>
-                </button>
-              </div>
             </div>
           )}
 
@@ -402,7 +359,7 @@ export default function AuthGateway() {
                       required
                       value={adminUsername}
                       onChange={(e) => setAdminUsername(e.target.value)}
-                      placeholder="admin"
+                      placeholder="Enter admin username"
                       className="w-full pl-9 pr-3 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-xs text-white placeholder-stone-500 focus:outline-hidden focus:border-purple-500"
                     />
                   </div>
@@ -419,7 +376,7 @@ export default function AuthGateway() {
                       required
                       value={adminPassword}
                       onChange={(e) => setAdminPassword(e.target.value)}
-                      placeholder="admin123"
+                      placeholder="••••••••"
                       className="w-full pl-9 pr-3 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-xs text-white placeholder-stone-500 focus:outline-hidden focus:border-purple-500"
                     />
                   </div>
@@ -434,18 +391,6 @@ export default function AuthGateway() {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </form>
-
-              {/* 1-Click Admin Demo */}
-              <div className="mt-4 pt-4 border-t border-stone-800 text-center">
-                <button
-                  onClick={handleQuickAdminDemo}
-                  type="button"
-                  className="w-full py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
-                >
-                  <KeyRound className="w-3.5 h-3.5 text-purple-400" />
-                  <span>1-Click Admin Login (admin / admin123)</span>
-                </button>
-              </div>
             </div>
           )}
 
@@ -473,7 +418,7 @@ export default function AuthGateway() {
                       required
                       value={riderIdentifier}
                       onChange={(e) => setRiderIdentifier(e.target.value)}
-                      placeholder="9876543210 or Amit Kumar"
+                      placeholder="Enter mobile or name"
                       className="w-full pl-9 pr-3 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-xs text-white placeholder-stone-500 focus:outline-hidden focus:border-blue-500"
                     />
                   </div>
@@ -481,7 +426,7 @@ export default function AuthGateway() {
 
                 <div>
                   <label className="block text-xs font-bold text-stone-300 mb-1">
-                    4-Digit PIN (Default: 1234)
+                    4-Digit PIN
                   </label>
                   <div className="relative">
                     <Lock className="w-4 h-4 text-stone-500 absolute left-3 top-1/2 -translate-y-1/2" />
@@ -491,7 +436,7 @@ export default function AuthGateway() {
                       required
                       value={riderPin}
                       onChange={(e) => setRiderPin(e.target.value)}
-                      placeholder="1234"
+                      placeholder="••••"
                       className="w-full pl-9 pr-3 py-2.5 bg-stone-800 border border-stone-700 rounded-xl text-xs text-white placeholder-stone-500 tracking-widest focus:outline-hidden focus:border-blue-500"
                     />
                   </div>
@@ -506,26 +451,6 @@ export default function AuthGateway() {
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </form>
-
-              {/* 1-Click Rider Demos */}
-              <div className="mt-4 pt-4 border-t border-stone-800 space-y-2">
-                <button
-                  onClick={() => handleQuickRiderDemo('9876543210')}
-                  type="button"
-                  className="w-full py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-xl text-xs font-bold transition-all flex items-center justify-between px-3"
-                >
-                  <span>🛵 Login as Amit Kumar</span>
-                  <span className="text-[10px] text-blue-400">PIN: 1234</span>
-                </button>
-                <button
-                  onClick={() => handleQuickRiderDemo('9876598765')}
-                  type="button"
-                  className="w-full py-2 bg-stone-800 hover:bg-stone-700 text-stone-300 rounded-xl text-xs font-bold transition-all flex items-center justify-between px-3"
-                >
-                  <span>🛵 Login as Rahul Verma</span>
-                  <span className="text-[10px] text-blue-400">PIN: 1234</span>
-                </button>
-              </div>
             </div>
           )}
 

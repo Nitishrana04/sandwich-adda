@@ -32,23 +32,6 @@ export default function AdminLogin() {
     }
   };
 
-  const handleDemoLogin = async () => {
-    setUsername('admin');
-    setPassword('admin123');
-    setError('');
-    setLoading(true);
-
-    const res = await loginAdmin('admin', 'admin123');
-    setLoading(false);
-
-    if (res.success) {
-      sound.playSuccess();
-      navigate(from, { replace: true });
-    } else {
-      setError(res.message);
-    }
-  };
-
   return (
     <div className="min-h-screen bg-stone-950 text-white flex flex-col justify-center items-center px-4 py-12">
       
@@ -96,7 +79,7 @@ export default function AdminLogin() {
                 required
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
-                placeholder="admin"
+                placeholder="Enter admin username"
                 className="w-full pl-10 pr-4 py-3 bg-stone-800 border border-stone-700 rounded-xl text-xs font-medium text-white placeholder-stone-500 focus:outline-hidden focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
@@ -127,21 +110,6 @@ export default function AdminLogin() {
             {loading ? 'Authenticating...' : 'Sign In as Admin'}
           </button>
         </form>
-
-        {/* 1-Click Quick Demo Login */}
-        <div className="mt-6 pt-6 border-t border-stone-800 text-center">
-          <p className="text-[11px] font-bold text-stone-400 mb-3">
-            Quick Testing / Demo Mode:
-          </p>
-          <button
-            onClick={handleDemoLogin}
-            type="button"
-            className="w-full py-2.5 bg-stone-800 hover:bg-stone-700 text-stone-200 border border-stone-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2"
-          >
-            <KeyRound className="w-3.5 h-3.5 text-orange-400" />
-            <span>1-Click Login (admin / admin123)</span>
-          </button>
-        </div>
 
       </div>
 

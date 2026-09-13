@@ -9,8 +9,8 @@ export default function RiderLogin() {
   const location = useLocation();
   const { loginRider } = useAuth();
 
-  const [identifier, setIdentifier] = useState('9876543210'); // Default phone or rider name
-  const [pin, setPin] = useState('1234');
+  const [identifier, setIdentifier] = useState('');
+  const [pin, setPin] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -22,23 +22,6 @@ export default function RiderLogin() {
     setLoading(true);
 
     const res = await loginRider(identifier, pin);
-    setLoading(false);
-
-    if (res.success) {
-      sound.playSuccess();
-      navigate(from, { replace: true });
-    } else {
-      setError(res.message);
-    }
-  };
-
-  const handleQuickLogin = async (phoneOrId, riderPin = '1234') => {
-    setIdentifier(phoneOrId);
-    setPin(riderPin);
-    setError('');
-    setLoading(true);
-
-    const res = await loginRider(phoneOrId, riderPin);
     setLoading(false);
 
     if (res.success) {
@@ -96,7 +79,7 @@ export default function RiderLogin() {
                 required
                 value={identifier}
                 onChange={(e) => setIdentifier(e.target.value)}
-                placeholder="9876543210"
+                placeholder="Enter registered mobile number"
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 focus:bg-white focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
@@ -114,7 +97,7 @@ export default function RiderLogin() {
                 required
                 value={pin}
                 onChange={(e) => setPin(e.target.value)}
-                placeholder="1234"
+                placeholder="••••"
                 className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-bold text-gray-900 tracking-widest focus:bg-white focus:outline-hidden focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
               />
             </div>
@@ -128,38 +111,6 @@ export default function RiderLogin() {
             {loading ? 'Logging in...' : 'Sign In as Delivery Partner'}
           </button>
         </form>
-
-        {/* 1-Click Quick Select Rider */}
-        <div className="mt-6 pt-5 border-t border-gray-100">
-          <p className="text-[11px] font-bold text-gray-500 text-center mb-2.5">
-            Quick 1-Click Login:
-          </p>
-          <div className="space-y-2">
-            <button
-              onClick={() => handleQuickLogin('9876543210', '1234')}
-              type="button"
-              className="w-full py-2.5 px-3 bg-blue-50 hover:bg-blue-100 text-blue-900 border border-blue-200 rounded-xl text-xs font-bold transition-all flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <span>🛵</span>
-                <span>Amit Kumar (Hero Splendor)</span>
-              </div>
-              <span className="text-[10px] font-black text-blue-600">PIN: 1234</span>
-            </button>
-
-            <button
-              onClick={() => handleQuickLogin('9876598765', '1234')}
-              type="button"
-              className="w-full py-2.5 px-3 bg-gray-50 hover:bg-gray-100 text-gray-900 border border-gray-200 rounded-xl text-xs font-bold transition-all flex items-center justify-between"
-            >
-              <div className="flex items-center gap-2">
-                <span>🛵</span>
-                <span>Rahul Verma (Honda Activa)</span>
-              </div>
-              <span className="text-[10px] font-black text-gray-500">PIN: 1234</span>
-            </button>
-          </div>
-        </div>
 
       </div>
 

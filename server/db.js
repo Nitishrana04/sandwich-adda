@@ -9,6 +9,7 @@ const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'data', 'store.json');
 let isMongoConnected = false;
 let lastMongoError = null;
+let retryTimeout = null;
 
 // Initialize database from initialData if store.json is missing or corrupted
 function initDb() {
@@ -101,6 +102,11 @@ export async function connectMongo() {
       serverSelectionTimeoutMS: 10000
     });
     isMongoConnected = true;
+    lastMongoError = null;
+    if (retryTimeout) {
+      clearTimeout(retryTimeout);
+      retryTimeout = null;
+    }
     console.log('🍃 Successfully connected to MongoDB Atlas (Cluster0)!');
 
     const mDb = mongoose.connection.db;
@@ -157,6 +163,17 @@ export async function connectMongo() {
     isMongoConnected = false;
     lastMongoError = err.message || String(err);
     console.error('⚠️ MongoDB Atlas connection notice (fallback to store.json):', err.message);
+
+    // Automatically retry connecting every 25 seconds
+    if (!retryTimeout) {
+      retryTimeout = setTimeout(() => {
+        retryTimeout = null;
+        if (!isMongoConnected) {
+          console.log('🔄 Retrying MongoDB Atlas connection in background...');
+          connectMongo();
+        }
+      }, 25000);
+    }
   }
 }
 

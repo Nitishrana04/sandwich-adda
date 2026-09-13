@@ -135,7 +135,10 @@ app.post('/api/auth/customer-login', (req, res) => {
 });
 
 // 1. Store Status & Settings
-app.get('/api/debug/db-status', (req, res) => {
+app.get('/api/debug/db-status', async (req, res) => {
+  if (req.query.retry === 'true') {
+    await db.connectMongo();
+  }
   res.json(db.getDbConnectionStatus());
 });
 

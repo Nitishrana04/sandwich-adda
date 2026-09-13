@@ -48,6 +48,25 @@ export default function AdminDashboard() {
     vehicle: 'Hero Splendor (UP-15-AB-3371)'
   });
 
+  const [dbConnStatus, setDbConnStatus] = useState(null);
+  const [retryingDb, setRetryingDb] = useState(false);
+
+  const handleRetryDbConnection = async () => {
+    setRetryingDb(true);
+    try {
+      const res = await fetch('/api/debug/db-status?retry=true');
+      const data = await res.json();
+      setDbConnStatus(data);
+      if (data.isMongoConnected) {
+        sound.playSuccess();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setRetryingDb(false);
+    }
+  };
+
   // Fetch all initial data
   const loadData = async () => {
     try {
@@ -75,6 +94,11 @@ export default function AdminDashboard() {
       setStoreStatus(statusData);
       setStats(statsData);
       setUsersList(Array.isArray(usersData) ? usersData : []);
+
+      fetch('/api/debug/db-status')
+        .then(r => r.json())
+        .then(setDbConnStatus)
+        .catch(() => {});
     } catch (err) {
       console.error('Failed to load admin data', err);
     } finally {
@@ -300,45 +324,99 @@ export default function AdminDashboard() {
               </div>
             </div>
 
-            {/* Quick Store Open/Close Toggle */}
-            <div className="flex items-center gap-2 bg-stone-100 p-1.5 rounded-2xl border border-stone-200 self-start sm:self-auto">
-              <span className="text-[11px] font-bold text-stone-500 px-2">
-                Store Mode:
-              </span>
-              <button
-                onClick={() => handleToggleStoreMode('OPEN')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
-                  storeStatus?.overrideMode === 'OPEN'
-                    ? 'bg-emerald-600 text-white shadow-sm'
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70'
-                }`}
-              >
-                🟢 OPEN
-              </button>
-              <button
-                onClick={() => handleToggleStoreMode('CLOSED')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
-                  storeStatus?.overrideMode === 'CLOSED'
-                    ? 'bg-red-600 text-white shadow-sm'
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70'
-                }`}
-              >
-                🔴 CLOSED
-              </button>
-              <button
-                onClick={() => handleToggleStoreMode('AUTO')}
-                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
-                  storeStatus?.overrideMode === 'AUTO'
-                    ? 'bg-amber-500 text-stone-900 shadow-sm'
-                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70'
-                }`}
-                title="Follows Sat & Sun 5-10 PM schedule"
-              >
-                ⏰ AUTO (Sat-Sun)
-              </button>
+            <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+              {/* Database Status Indicator */}
+              {dbConnStatus && (
+                <div className="flex items-center">
+                  {dbConnStatus.isMongoConnected ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 text-emerald-800 border border-emerald-200 rounded-xl text-xs font-bold shadow-2xs">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      <span>MongoDB Atlas Connected 🍃</span>
+                    </span>
+                  ) : (
+                    <button
+                      onClick={handleRetryDbConnection}
+                      disabled={retryingDb}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-300 rounded-xl text-xs font-bold shadow-2xs transition-colors cursor-pointer"
+                      title="Click to retry connecting to MongoDB Atlas"
+                    >
+                      <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                      <span>{retryingDb ? 'Connecting...' : 'Atlas IP Required (Click to Test) 🔄'}</span>
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Quick Store Open/Close Toggle */}
+              <div className="flex items-center gap-2 bg-stone-100 p-1.5 rounded-2xl border border-stone-200">
+                <span className="text-[11px] font-bold text-stone-500 px-2">
+                  Store Mode:
+                </span>
+                <button
+                  onClick={() => handleToggleStoreMode('OPEN')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
+                    storeStatus?.overrideMode === 'OPEN'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70'
+                  }`}
+                >
+                  🟢 OPEN
+                </button>
+                <button
+                  onClick={() => handleToggleStoreMode('CLOSED')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
+                    storeStatus?.overrideMode === 'CLOSED'
+                      ? 'bg-red-600 text-white shadow-sm'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70'
+                  }`}
+                >
+                  🔴 CLOSED
+                </button>
+                <button
+                  onClick={() => handleToggleStoreMode('AUTO')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
+                    storeStatus?.overrideMode === 'AUTO'
+                      ? 'bg-amber-500 text-stone-900 shadow-sm'
+                      : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70'
+                  }`}
+                  title="Follows Sat & Sun 5-10 PM schedule"
+                >
+                  ⏰ AUTO (Sat-Sun)
+                </button>
+              </div>
             </div>
           </div>
         </div>
+
+        {/* Banner if MongoDB Atlas needs IP whitelist */}
+        {dbConnStatus && !dbConnStatus.isMongoConnected && (
+          <div className="mb-6 p-4 sm:p-5 bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-400/80 rounded-3xl shadow-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-2xl bg-amber-500 text-white flex items-center justify-center font-bold text-lg flex-shrink-0 mt-0.5">
+                  🍃
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-amber-950">
+                    Database Whitelist Setup: Enable 0.0.0.0/0 in MongoDB Atlas
+                  </h3>
+                  <p className="text-xs text-amber-800 mt-1 leading-relaxed">
+                    Render cloud server ko MongoDB Atlas se connect karne ke liye: 
+                    <strong> MongoDB Atlas &gt; Network Access &gt; "Add IP Address" &gt; "Allow Access from Anywhere" (0.0.0.0/0)</strong> select karke Confirm karein. Uske baad data automatically cloud mein permanently save hone lagega!
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={handleRetryDbConnection}
+                disabled={retryingDb}
+                className="px-4 py-2.5 bg-stone-900 hover:bg-stone-800 text-white rounded-xl text-xs font-black shadow-md transition-all whitespace-nowrap self-start sm:self-auto cursor-pointer"
+              >
+                {retryingDb ? 'Testing Connection...' : 'Check Connection Now 🔄'}
+              </button>
+            </div>
+          </div>
+        )}
         
         {/* KPI Summary Cards */}
         {stats && (

@@ -28,14 +28,10 @@ export default function CustomerCart() {
 
   const [couponInput, setCouponInput] = useState('');
   const [couponMsg, setCouponMsg] = useState({ text: '', type: '' });
-  const [paymentMethod, setPaymentMethod] = useState('RAZORPAY'); // RAZORPAY, COD, or UPI
+  const [paymentMethod, setPaymentMethod] = useState('RAZORPAY'); // RAZORPAY or COD
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [showUpiModal, setShowUpiModal] = useState(false);
-  const [utrNumber, setUtrNumber] = useState('');
-  const [copiedUpi, setCopiedUpi] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(300); // 5 minutes timer
 
   useEffect(() => {
     if (user) {
@@ -49,20 +45,6 @@ export default function CustomerCart() {
       }));
     }
   }, [user]);
-
-  useEffect(() => {
-    let timer;
-    if (showUpiModal && timeLeft > 0) {
-      timer = setInterval(() => setTimeLeft((prev) => prev - 1), 1000);
-    }
-    return () => clearInterval(timer);
-  }, [showUpiModal, timeLeft]);
-
-  const handleCopyUpi = () => {
-    navigator.clipboard.writeText('9897633716@upi');
-    setCopiedUpi(true);
-    setTimeout(() => setCopiedUpi(false), 2000);
-  };
 
   const handleApplyCoupon = async (codeToApply) => {
     const code = codeToApply || couponInput;
@@ -99,7 +81,7 @@ export default function CustomerCart() {
     return true;
   };
 
-  const executeOrderPlacement = async (confirmedUtr = '', paymentOverrides = {}) => {
+  const executeOrderPlacement = async (paymentOverrides = {}) => {
     setIsSubmitting(true);
     setErrorMsg('');
 
@@ -131,11 +113,10 @@ export default function CustomerCart() {
         totalAmount: finalAmount,
         couponCode: coupon ? coupon.code : null,
         paymentMethod: activePaymentMethod,
-        paymentStatus: paymentOverrides.paymentStatus || (activePaymentMethod === 'ONLINE' || activePaymentMethod === 'UPI' ? 'PAID' : 'PENDING'),
+        paymentStatus: paymentOverrides.paymentStatus || (activePaymentMethod === 'ONLINE' ? 'PAID' : 'PENDING'),
         razorpayOrderId: paymentOverrides.razorpayOrderId || null,
         razorpayPaymentId: paymentOverrides.razorpayPaymentId || null,
-        razorpaySignature: paymentOverrides.razorpaySignature || null,
-        utrNumber: confirmedUtr || utrNumber
+        razorpaySignature: paymentOverrides.razorpaySignature || null
       };
 
       const res = await fetch('/api/orders', {
@@ -149,7 +130,6 @@ export default function CustomerCart() {
       if (!res.ok) {
         setErrorMsg(data.message || 'Failed to place order. Store might be closed.');
         setIsSubmitting(false);
-        setShowUpiModal(false);
         return;
       }
 
@@ -163,7 +143,6 @@ export default function CustomerCart() {
       // Success
       sound.playSuccess();
       clearCart();
-      setShowUpiModal(false);
       navigate(`/orders/${data.id}`, { state: { justPlaced: true } });
     } catch (err) {
       setErrorMsg('Network error while placing order. Please try again.');
@@ -193,7 +172,7 @@ export default function CustomerCart() {
         },
         onSuccess: async (payData) => {
           // Payment successfully verified by /api/verify-payment on backend!
-          await executeOrderPlacement('', {
+          await executeOrderPlacement({
             paymentMethod: 'ONLINE',
             paymentStatus: 'PAID',
             razorpayOrderId: payData.razorpay_order_id,
@@ -207,19 +186,14 @@ export default function CustomerCart() {
         },
         onDismiss: () => {
           setIsSubmitting(false);
-          setErrorMsg('Payment modal closed. You can retry or choose another payment method.');
+          setErrorMsg('Payment modal closed. You can retry or choose Cash on Delivery.');
         }
       });
       return;
     }
 
-    if (paymentMethod === 'UPI') {
-      setTimeLeft(300);
-      setShowUpiModal(true);
-      return;
-    }
-
-    executeOrderPlacement();
+    // Cash on Delivery
+    executeOrderPlacement({ paymentMethod: 'COD', paymentStatus: 'PENDING' });
   };
 
   const handleTestRazorpay = () => {
@@ -640,31 +614,6 @@ export default function CustomerCart() {
                 </div>
                 <span className="text-lg flex-shrink-0">💵</span>
               </label>
-
-              {/* Option 3: Direct Store UPI */}
-              <label
-                className={`flex items-start justify-between p-3.5 rounded-xl border cursor-pointer transition-all ${
-                  paymentMethod === 'UPI'
-                    ? 'border-orange-500 bg-orange-50/50 ring-2 ring-orange-500/20'
-                    : 'border-gray-200 hover:bg-gray-50'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <input
-                    type="radio"
-                    name="payment"
-                    value="UPI"
-                    checked={paymentMethod === 'UPI'}
-                    onChange={() => setPaymentMethod('UPI')}
-                    className="accent-orange-600 mt-0.5 w-4 h-4"
-                  />
-                  <div>
-                    <p className="text-xs font-bold text-gray-900">Direct Store UPI QR</p>
-                    <p className="text-[11px] text-gray-500 mt-0.5">Manual QR scan & 12-digit UTR input</p>
-                  </div>
-                </div>
-                <span className="text-lg flex-shrink-0">📱</span>
-              </label>
             </div>
           </div>
 
@@ -749,103 +698,6 @@ export default function CustomerCart() {
         </div>
 
       </div>
-
-      {/* ------------------- ADVANCED DYNAMIC UPI QR MODAL ------------------- */}
-      {showUpiModal && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-200 relative overflow-hidden animate-in fade-in zoom-in duration-200">
-            
-            {/* Header */}
-            <div className="text-center mb-4">
-              <span className="text-xs font-black uppercase tracking-widest text-orange-600 bg-orange-50 px-3 py-1 rounded-full">
-                Instant UPI Payment
-              </span>
-              <h3 className="text-xl font-black text-gray-900 mt-2">
-                Scan & Pay ₹{finalAmount}
-              </h3>
-              <p className="text-xs text-gray-500">
-                Scan with GPay, PhonePe, Paytm or any UPI App
-              </p>
-            </div>
-
-            {/* Dynamic QR Box */}
-            <div className="bg-orange-50/50 p-4 rounded-2xl border-2 border-dashed border-orange-200 flex flex-col items-center justify-center mb-4">
-              <div className="w-44 h-44 bg-white p-2 rounded-xl shadow-md flex items-center justify-center relative">
-                <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(
-                    `upi://pay?pa=9897633716@upi&pn=Sandwich%20Adda&am=${finalAmount}&cu=INR&tn=Order_Payment`
-                  )}`}
-                  alt="UPI QR Code"
-                  className="w-full h-full object-contain"
-                />
-              </div>
-
-              {/* UPI ID with Copy Button */}
-              <div className="mt-3 flex items-center justify-between w-full bg-white px-3 py-1.5 rounded-xl border border-gray-200 text-xs">
-                <span className="font-bold text-gray-700">9897633716@upi</span>
-                <button
-                  type="button"
-                  onClick={handleCopyUpi}
-                  className="text-[11px] font-black text-orange-600 hover:text-orange-700 bg-orange-50 px-2 py-0.5 rounded-lg"
-                >
-                  {copiedUpi ? 'Copied! ✓' : 'Copy'}
-                </button>
-              </div>
-            </div>
-
-            {/* Mobile Direct Pay Button */}
-            <a
-              href={`upi://pay?pa=9897633716@upi&pn=Sandwich%20Adda&am=${finalAmount}&cu=INR&tn=Sandwich%20Adda%20Order`}
-              className="w-full py-2.5 mb-3 bg-stone-900 hover:bg-stone-800 text-white rounded-xl font-black text-xs transition-all flex items-center justify-center gap-2"
-            >
-              <span>Open in UPI App (GPay / PhonePe) 📱</span>
-            </a>
-
-            {/* Timer countdown */}
-            <div className="flex items-center justify-between text-xs text-gray-500 mb-3 px-1">
-              <span>QR expires in:</span>
-              <span className="font-black text-orange-600 font-mono">
-                {Math.floor(timeLeft / 60)}:{(timeLeft % 60).toString().padStart(2, '0')}
-              </span>
-            </div>
-
-            {/* UTR Input (Optional) */}
-            <div className="mb-4">
-              <label className="block text-[11px] font-bold text-gray-600 mb-1">
-                Enter 12-digit UTR / Ref ID (Optional):
-              </label>
-              <input
-                type="text"
-                maxLength={16}
-                value={utrNumber}
-                onChange={(e) => setUtrNumber(e.target.value)}
-                placeholder="e.g. 423981290812"
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium focus:outline-hidden focus:border-orange-500"
-              />
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() => setShowUpiModal(false)}
-                className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-xs"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={isSubmitting}
-                onClick={() => executeOrderPlacement(utrNumber)}
-                className="flex-1 py-2.5 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-xl font-black text-xs shadow-md shadow-emerald-600/30 flex items-center justify-center gap-1.5 disabled:opacity-50"
-              >
-                <span>{isSubmitting ? 'Confirming...' : 'I have Paid ✓'}</span>
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
 
     </div>
   );

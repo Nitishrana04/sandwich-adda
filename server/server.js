@@ -135,6 +135,10 @@ app.post('/api/auth/customer-login', (req, res) => {
 });
 
 // 1. Store Status & Settings
+app.get('/api/debug/db-status', (req, res) => {
+  res.json(db.getDbConnectionStatus());
+});
+
 app.get('/api/status', (req, res) => {
   try {
     const status = db.getStoreStatus();

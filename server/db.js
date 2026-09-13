@@ -8,6 +8,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const DB_FILE = path.join(__dirname, 'data', 'store.json');
 let isMongoConnected = false;
+let lastMongoError = null;
 
 // Initialize database from initialData if store.json is missing or corrupted
 function initDb() {
@@ -153,8 +154,22 @@ export async function connectMongo() {
       console.log('✅ Initial seed completed into MongoDB Atlas.');
     }
   } catch (err) {
+    isMongoConnected = false;
+    lastMongoError = err.message || String(err);
     console.error('⚠️ MongoDB Atlas connection notice (fallback to store.json):', err.message);
   }
+}
+
+export function getDbConnectionStatus() {
+  return {
+    isMongoConnected,
+    readyState: mongoose.connection.readyState,
+    readyStateText: ['disconnected', 'connected', 'connecting', 'disconnecting'][mongoose.connection.readyState] || 'unknown',
+    hasUri: Boolean(process.env.MONGODB_URI || MONGODB_DEFAULT_URI),
+    lastMongoError,
+    totalOrders: (db.orders || []).length,
+    totalUsers: (db.users || []).length
+  };
 }
 
 function saveDb(data) {

@@ -300,6 +300,16 @@ export default function RiderPortal() {
             <div className="space-y-4">
               {activeOrders.map((order) => {
                 const isPickedUp = ['PICKED_UP', 'OUT_FOR_DELIVERY'].includes(order.status);
+                const hasExactGps = Boolean(
+                  (order.latitude && order.longitude) ||
+                  (order.customerLocation?.lat && order.customerLocation?.lng)
+                );
+                const customerGpsCoords = order.latitude && order.longitude
+                  ? `${order.latitude},${order.longitude}`
+                  : (order.customerLocation?.lat && order.customerLocation?.lng)
+                    ? `${order.customerLocation.lat},${order.customerLocation.lng}`
+                    : null;
+                const destinationParam = customerGpsCoords || encodeURIComponent(order.deliveryAddress + ' Meerut');
 
                 return (
                   <div
@@ -365,8 +375,14 @@ export default function RiderPortal() {
                           <p className="text-[11px] text-gray-700 font-medium">
                             {order.houseNo ? `${order.houseNo}, ` : ''}{order.deliveryAddress}
                           </p>
+                          {hasExactGps && (
+                            <div className="mt-1 flex items-center gap-1 text-[10px] font-mono text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                              <span>📍 Pinpoint GPS:</span>
+                              <span>{customerGpsCoords}</span>
+                            </div>
+                          )}
                           {order.landmark && (
-                            <p className="text-[11px] text-gray-500">
+                            <p className="text-[11px] text-gray-500 mt-1">
                               Landmark: {order.landmark}
                             </p>
                           )}
@@ -399,7 +415,7 @@ export default function RiderPortal() {
                         </a>
 
                         <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(order.deliveryAddress + ' Meerut')}`}
+                          href={`https://www.google.com/maps/search/?api=1&query=${destinationParam}`}
                           target="_blank"
                           rel="noreferrer"
                           className="flex items-center justify-center gap-1 py-2 bg-white text-orange-800 hover:bg-orange-50 border border-orange-200 rounded-xl text-xs font-bold transition-colors"
@@ -424,7 +440,7 @@ export default function RiderPortal() {
                     {isPickedUp && (
                       <div className="space-y-2 mb-3">
                         <a
-                          href={`https://www.google.com/maps/dir/?api=1&origin=Shop+No+4+Rohta+Road+Meerut&destination=${encodeURIComponent(order.deliveryAddress + ' Meerut')}&travelmode=two_wheeler`}
+                          href={`https://www.google.com/maps/dir/?api=1&origin=Shop+No+4+Rohta+Road+Meerut&destination=${destinationParam}&travelmode=two_wheeler`}
                           target="_blank"
                           rel="noreferrer"
                           className="w-full py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold text-xs shadow-sm flex items-center justify-center gap-1.5 transition-colors"

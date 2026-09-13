@@ -111,11 +111,31 @@ export default function LiveDeliveryMap({ order, liveLocation }) {
     }
   };
 
-  const riderPos = getCoordinatesFromStatus();
   const isDelivered = order?.status === 'DELIVERED';
 
-  // Google Maps turn-by-turn routing URL
-  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${riderPos[0]},${riderPos[1]}&destination=${encodeURIComponent(order?.deliveryAddress || 'Rohta Road Meerut')}&travelmode=two_wheeler`;
+  // Dynamic customer position if pinned on map
+  const customerPos = (order?.latitude && order?.longitude)
+    ? [order.latitude, order.longitude]
+    : (order?.customerLocation?.lat && order?.customerLocation?.lng)
+      ? [order.customerLocation.lat, order.customerLocation.lng]
+      : CUSTOMER_COORDS;
+
+  const currentRoutePoints = [
+    ROUTE_POINTS[0],
+    ROUTE_POINTS[1],
+    ROUTE_POINTS[2],
+    ROUTE_POINTS[3],
+    customerPos
+  ];
+
+  // Exact Google Maps turn-by-turn navigation destination
+  const destinationParam = (order?.latitude && order?.longitude)
+    ? `${order.latitude},${order.longitude}`
+    : (order?.customerLocation?.lat && order?.customerLocation?.lng)
+      ? `${order.customerLocation.lat},${order.customerLocation.lng}`
+      : encodeURIComponent(order?.deliveryAddress || 'Rohta Road Meerut');
+
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${riderPos[0]},${riderPos[1]}&destination=${destinationParam}&travelmode=two_wheeler`;
 
   return (
     <div className="bg-stone-900 rounded-3xl overflow-hidden shadow-2xl border border-stone-800 text-white mb-6">
@@ -186,11 +206,12 @@ export default function LiveDeliveryMap({ order, liveLocation }) {
           </Marker>
 
           {/* Customer Doorstep Pin */}
-          <Marker position={CUSTOMER_COORDS} icon={createCustomerIcon(order?.customerName)}>
+          <Marker position={customerPos} icon={createCustomerIcon(order?.customerName)}>
             <Popup>
               <div className="font-sans text-xs">
-                <strong>Delivery Destination</strong><br />
+                <strong>Delivery Destination (Doorstep)</strong><br />
                 {order?.deliveryAddress || 'Rohta Road, Meerut'}<br />
+                {order?.latitude && <span className="text-[10px] text-gray-500 font-mono">GPS: {order.latitude.toFixed(4)}, {order.longitude.toFixed(4)}<br /></span>}
                 <strong>OTP: {order?.deliveryOtp}</strong>
               </div>
             </Popup>
@@ -214,7 +235,7 @@ export default function LiveDeliveryMap({ order, liveLocation }) {
 
           {/* Road Path Connecting Kitchen to Customer */}
           <Polyline
-            positions={ROUTE_POINTS}
+            positions={currentRoutePoints}
             color="#ea580c"
             weight={5}
             opacity={0.8}

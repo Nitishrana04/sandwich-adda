@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Trash2, Plus, Minus, Tag, Check, ShieldCheck, MapPin, Phone, User, FileText, QrCode, AlertTriangle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { sound } from '../utils/audio';
+import LocationPicker from '../components/LocationPicker';
 
 export default function CustomerCart() {
   const navigate = useNavigate();
@@ -93,6 +94,11 @@ export default function CustomerCart() {
         houseNo: customerInfo.houseNo || '',
         landmark: customerInfo.landmark || '',
         instructions: customerInfo.instructions || '',
+        latitude: customerInfo.latitude || null,
+        longitude: customerInfo.longitude || null,
+        customerLocation: (customerInfo.latitude && customerInfo.longitude)
+          ? { lat: customerInfo.latitude, lng: customerInfo.longitude }
+          : null,
         items: items.map((i) => ({
           id: i.id,
           name: i.name,
@@ -292,6 +298,32 @@ export default function CustomerCart() {
                     className="w-full px-3 py-2 border border-gray-200 rounded-xl text-xs font-medium focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500"
                   />
                 </div>
+              </div>
+
+              {/* Interactive Google Map Location Picker & GPS Detector */}
+              <div className="p-3 bg-stone-50 rounded-2xl border border-stone-200/80">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-black text-stone-800 flex items-center gap-1.5">
+                    <MapPin className="w-4 h-4 text-orange-600" />
+                    Delivery Location on Map
+                  </span>
+                  <span className="text-[10px] font-bold text-orange-600 bg-orange-100/80 px-2 py-0.5 rounded-md">
+                    Accurate GPS
+                  </span>
+                </div>
+                <LocationPicker
+                  initialLat={customerInfo.latitude}
+                  initialLng={customerInfo.longitude}
+                  currentAddress={customerInfo.address}
+                  onLocationSelect={({ address, lat, lng }) => {
+                    setCustomerInfo((prev) => ({
+                      ...prev,
+                      address: address || prev.address,
+                      latitude: lat,
+                      longitude: lng
+                    }));
+                  }}
+                />
               </div>
 
               <div>

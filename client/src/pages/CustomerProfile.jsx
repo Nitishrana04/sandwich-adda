@@ -3,12 +3,15 @@ import { Link, useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, MapPin, ShoppingBag, Award, ArrowLeft, LogOut, Check, Save } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { sound } from '../utils/audio';
+import LocationPicker from '../components/LocationPicker';
 
 export default function CustomerProfile() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
 
   const [savedAddress, setSavedAddress] = useState(user?.address || '');
+  const [savedLat, setSavedLat] = useState(user?.latitude || null);
+  const [savedLng, setSavedLng] = useState(user?.longitude || null);
   const [orders, setOrders] = useState([]);
   const [isSaved, setIsSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -37,7 +40,12 @@ export default function CustomerProfile() {
 
   const handleSaveAddress = () => {
     if (user) {
-      const updatedUser = { ...user, address: savedAddress };
+      const updatedUser = { 
+        ...user, 
+        address: savedAddress,
+        latitude: savedLat,
+        longitude: savedLng
+      };
       localStorage.setItem('sa_auth_user', JSON.stringify(updatedUser));
       setIsSaved(true);
       sound.playSuccess();
@@ -156,14 +164,30 @@ export default function CustomerProfile() {
           </span>
         </div>
 
-        <div className="space-y-3">
-          <textarea
-            rows={3}
-            value={savedAddress}
-            onChange={(e) => setSavedAddress(e.target.value)}
-            placeholder="Enter your flat/house no, street, landmark, Rohta Road Meerut..."
-            className="w-full p-4 bg-gray-50 border border-gray-200 rounded-2xl text-xs font-medium text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+        <div className="space-y-4">
+          <LocationPicker
+            initialLat={savedLat}
+            initialLng={savedLng}
+            currentAddress={savedAddress}
+            onLocationSelect={({ address, lat, lng }) => {
+              setSavedAddress(address);
+              setSavedLat(lat);
+              setSavedLng(lng);
+            }}
           />
+
+          <div>
+            <label className="block text-[11px] font-bold text-gray-500 mb-1">
+              Flat / House No. & Landmark Details
+            </label>
+            <textarea
+              rows={2}
+              value={savedAddress}
+              onChange={(e) => setSavedAddress(e.target.value)}
+              placeholder="Enter your flat/house no, street, landmark, Rohta Road Meerut..."
+              className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl text-xs font-medium text-gray-800 placeholder-gray-400 focus:outline-hidden focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+            />
+          </div>
 
           <button
             onClick={handleSaveAddress}

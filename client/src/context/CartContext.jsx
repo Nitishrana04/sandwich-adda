@@ -30,10 +30,12 @@ export const CartProvider = ({ children }) => {
         address: '',
         houseNo: '',
         landmark: '',
-        instructions: ''
+        instructions: '',
+        latitude: null,
+        longitude: null
       };
     } catch {
-      return { name: '', phone: '', address: '', houseNo: '', landmark: '', instructions: '' };
+      return { name: '', phone: '', address: '', houseNo: '', landmark: '', instructions: '', latitude: null, longitude: null };
     }
   });
 

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Mail, Phone, Lock, User, MapPin, ArrowRight, AlertCircle } from 'lucide-react';
+import { Mail, Phone, Lock, User, MapPin, ArrowRight, AlertCircle, Navigation, RefreshCw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { sound } from '../utils/audio';
 
@@ -26,6 +26,35 @@ export default function SingleLogin() {
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [detectingLocation, setDetectingLocation] = useState(false);
+
+  const handleDetectLocation = () => {
+    if (!navigator.geolocation) return;
+    setDetectingLocation(true);
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`);
+          const data = await res.json();
+          if (data?.address) {
+            const addr = data.address;
+            const street = addr.road || addr.suburb || addr.neighbourhood || '';
+            const area = addr.city_district || addr.suburb || 'Rohta Road';
+            const city = addr.city || addr.town || 'Meerut';
+            const formatted = [street, area !== street ? area : '', city, 'Uttar Pradesh'].filter(Boolean).join(', ');
+            setRegisterForm((prev) => ({ ...prev, address: formatted }));
+          }
+        } catch (e) {
+          // ignore
+        } finally {
+          setDetectingLocation(false);
+        }
+      },
+      () => setDetectingLocation(false),
+      { enableHighAccuracy: true, timeout: 8000 }
+    );
+  };
 
   // 1. Single Login Handler
   const handleLogin = async (e) => {
@@ -250,9 +279,24 @@ export default function SingleLogin() {
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-stone-300 mb-1">
-                  Delivery Address
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-xs font-bold text-stone-300">
+                    Delivery Address
+                  </label>
+                  <button
+                    type="button"
+                    onClick={handleDetectLocation}
+                    disabled={detectingLocation}
+                    className="text-[10px] font-bold text-orange-400 hover:text-orange-300 flex items-center gap-1 cursor-pointer transition-colors"
+                  >
+                    {detectingLocation ? (
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Navigation className="w-3 h-3" />
+                    )}
+                    <span>{detectingLocation ? 'Detecting...' : '📍 Use My GPS'}</span>
+                  </button>
+                </div>
                 <div className="relative">
                   <MapPin className="w-4 h-4 text-stone-500 absolute left-3 top-3" />
                   <textarea

@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingBag, ArrowLeft, Clock, RefreshCw, CheckCircle, ChevronRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 
 export default function CustomerOrders() {
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { user, isAdmin } = useAuth();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -13,7 +15,20 @@ export default function CustomerOrders() {
     try {
       const res = await fetch('/api/orders');
       const data = await res.json();
-      setOrders(data);
+      if (Array.isArray(data)) {
+        if (isAdmin) {
+          setOrders(data);
+        } else {
+          const userPhone = (user?.phone || '').trim();
+          const userId = user?.id;
+          const myOrders = data.filter(
+            (o) => (userPhone && o.customerPhone === userPhone) || (userId && o.customerId === userId)
+          );
+          setOrders(myOrders);
+        }
+      } else {
+        setOrders([]);
+      }
     } catch (e) {
       console.error('Failed to load orders', e);
     } finally {
@@ -23,7 +38,7 @@ export default function CustomerOrders() {
 
   useEffect(() => {
     fetchOrders();
-  }, []);
+  }, [user]);
 
   const handleReorder = (order) => {
     order.items.forEach((item) => {

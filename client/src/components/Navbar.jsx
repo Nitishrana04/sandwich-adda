@@ -49,10 +49,17 @@ export default function Navbar() {
                 <span className="text-lg sm:text-xl font-black tracking-tight text-white group-hover:text-orange-400 transition-colors">
                   Sandwich Adda
                 </span>
-                <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-widest bg-orange-500/20 text-orange-300 border border-orange-500/30 px-2 py-0.5 rounded-full">
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse"></span>
-                  Open Now
-                </span>
+                {storeStatus?.isOpen ? (
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-widest bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Open Now
+                  </span>
+                ) : (
+                  <span className="hidden sm:inline-flex items-center gap-1 text-[10px] uppercase font-bold tracking-widest bg-stone-800 text-stone-400 border border-stone-700 px-2 py-0.5 rounded-full">
+                    <span className="w-1.5 h-1.5 rounded-full bg-stone-500"></span>
+                    Closed
+                  </span>
+                )}
               </div>
               <p className="text-[11px] text-stone-400 font-medium hidden sm:block">
                 Good Food • Local Delivery • Always Fresh

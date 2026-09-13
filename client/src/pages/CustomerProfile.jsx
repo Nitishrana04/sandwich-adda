@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Phone, Mail, MapPin, ShoppingBag, Award, ArrowLeft, LogOut, Check, Save } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -20,9 +20,11 @@ export default function CustomerProfile() {
         const data = await res.json();
         if (Array.isArray(data)) {
           const myOrders = data.filter(
-            (o) => o.customerPhone === user?.phone || o.customerId === user?.id
+            (o) => (user?.phone && o.customerPhone === user.phone) || (user?.id && o.customerId === user.id)
           );
-          setOrders(myOrders.length > 0 ? myOrders : data.slice(0, 3));
+          setOrders(myOrders);
+        } else {
+          setOrders([]);
         }
       } catch (err) {
         console.error('Failed to load user orders', err);

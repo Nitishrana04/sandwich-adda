@@ -45,7 +45,7 @@ export default function AdminDashboard() {
   const [riderForm, setRiderForm] = useState({
     name: '',
     phone: '',
-    vehicle: 'Hero Splendor (UP-15-AB-1234)'
+    vehicle: 'Hero Splendor (UP-15-AB-3371)'
   });
 
   // Fetch all initial data
@@ -198,7 +198,7 @@ export default function AdminDashboard() {
       });
       if (res.ok) {
         setShowAddRiderModal(false);
-        setRiderForm({ name: '', phone: '', vehicle: 'Hero Splendor (UP-15-AB-1234)' });
+        setRiderForm({ name: '', phone: '', vehicle: 'Hero Splendor (UP-15-AB-3371)' });
         loadData();
       }
     } catch (err) {

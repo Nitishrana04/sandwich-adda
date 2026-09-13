@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Trash2, Plus, Minus, Tag, Check, ShieldCheck, MapPin, Phone, User, FileText, QrCode, AlertTriangle } from 'lucide-react';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import { sound } from '../utils/audio';
 import LocationPicker from '../components/LocationPicker';
 
@@ -22,6 +23,7 @@ export default function CustomerCart() {
     customerInfo,
     setCustomerInfo
   } = useCart();
+  const { user } = useAuth();
 
   const [couponInput, setCouponInput] = useState('');
   const [couponMsg, setCouponMsg] = useState({ text: '', type: '' });
@@ -32,6 +34,19 @@ export default function CustomerCart() {
   const [utrNumber, setUtrNumber] = useState('');
   const [copiedUpi, setCopiedUpi] = useState(false);
   const [timeLeft, setTimeLeft] = useState(300); // 5 minutes timer
+
+  useEffect(() => {
+    if (user) {
+      setCustomerInfo((prev) => ({
+        ...prev,
+        name: prev.name || user.name || '',
+        phone: prev.phone || user.phone || '',
+        address: prev.address || user.address || '',
+        latitude: prev.latitude || user.latitude || null,
+        longitude: prev.longitude || user.longitude || null,
+      }));
+    }
+  }, [user]);
 
   useEffect(() => {
     let timer;
@@ -88,6 +103,7 @@ export default function CustomerCart() {
 
     try {
       const orderPayload = {
+        customerId: user?.id || null,
         customerName: customerInfo.name.trim(),
         customerPhone: customerInfo.phone.trim(),
         deliveryAddress: customerInfo.address.trim(),
@@ -129,6 +145,13 @@ export default function CustomerCart() {
         setShowUpiModal(false);
         return;
       }
+
+      // Record placed order ID so it shows in user's order history reliably
+      try {
+        const existing = JSON.parse(localStorage.getItem('sa_my_order_ids') || '[]');
+        const updated = [data.id, data.orderNumber, ...existing.filter(x => x !== data.id && x !== data.orderNumber)];
+        localStorage.setItem('sa_my_order_ids', JSON.stringify(updated));
+      } catch (e) {}
 
       // Success
       sound.playSuccess();

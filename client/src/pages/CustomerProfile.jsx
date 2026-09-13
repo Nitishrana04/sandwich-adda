@@ -22,8 +22,16 @@ export default function CustomerProfile() {
         const res = await fetch('/api/orders');
         const data = await res.json();
         if (Array.isArray(data)) {
+          let placedIds = [];
+          try {
+            placedIds = JSON.parse(localStorage.getItem('sa_my_order_ids') || '[]');
+          } catch (e) {}
+
           const myOrders = data.filter(
-            (o) => (user?.phone && o.customerPhone === user.phone) || (user?.id && o.customerId === user.id)
+            (o) => (user?.phone && o.customerPhone === user.phone) ||
+                   (user?.id && o.customerId === user.id) ||
+                   placedIds.includes(o.id) ||
+                   placedIds.includes(o.orderNumber)
           );
           setOrders(myOrders);
         } else {

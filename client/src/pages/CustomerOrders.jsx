@@ -21,8 +21,16 @@ export default function CustomerOrders() {
         } else {
           const userPhone = (user?.phone || '').trim();
           const userId = user?.id;
+          let placedIds = [];
+          try {
+            placedIds = JSON.parse(localStorage.getItem('sa_my_order_ids') || '[]');
+          } catch (e) {}
+
           const myOrders = data.filter(
-            (o) => (userPhone && o.customerPhone === userPhone) || (userId && o.customerId === userId)
+            (o) => (userPhone && o.customerPhone === userPhone) ||
+                   (userId && o.customerId === userId) ||
+                   placedIds.includes(o.id) ||
+                   placedIds.includes(o.orderNumber)
           );
           setOrders(myOrders);
         }

@@ -83,10 +83,12 @@ function initDb() {
   return loaded;
 }
 
+const MONGODB_DEFAULT_URI = 'mongodb+srv://itsnrjaat_db_user:QA0sKEQsAYphb2mM@cluster0.4p0bshn.mongodb.net/sandwich_adda?retryWrites=true&w=majority';
+
 let db = initDb();
 
 export async function connectMongo() {
-  const uri = process.env.MONGODB_URI;
+  const uri = process.env.MONGODB_URI || MONGODB_DEFAULT_URI;
   if (!uri) {
     console.log('ℹ️ No MONGODB_URI configured. Running on local store.json');
     return;
@@ -166,31 +168,37 @@ function saveDb(data) {
   // 2. Persist to MongoDB Atlas cloud asynchronously
   if (isMongoConnected && mongoose.connection.readyState === 1) {
     const mDb = mongoose.connection.db;
+    const cleanDoc = (doc) => {
+      if (!doc) return doc;
+      const { _id, ...clean } = doc;
+      return clean;
+    };
+
     Promise.all([
       data.settings ? mDb.collection('settings').updateOne(
         { _id: 'store_settings' },
-        { $set: data.settings },
+        { $set: cleanDoc(data.settings) },
         { upsert: true }
       ) : Promise.resolve(),
       data.menu && data.menu.length > 0 ? (async () => {
         await mDb.collection('menu').deleteMany({});
-        await mDb.collection('menu').insertMany(data.menu);
+        await mDb.collection('menu').insertMany(data.menu.map(cleanDoc));
       })() : Promise.resolve(),
       data.orders && data.orders.length > 0 ? (async () => {
         await mDb.collection('orders').deleteMany({});
-        await mDb.collection('orders').insertMany(data.orders);
+        await mDb.collection('orders').insertMany(data.orders.map(cleanDoc));
       })() : Promise.resolve(),
       data.riders && data.riders.length > 0 ? (async () => {
         await mDb.collection('riders').deleteMany({});
-        await mDb.collection('riders').insertMany(data.riders);
+        await mDb.collection('riders').insertMany(data.riders.map(cleanDoc));
       })() : Promise.resolve(),
       data.coupons && data.coupons.length > 0 ? (async () => {
         await mDb.collection('coupons').deleteMany({});
-        await mDb.collection('coupons').insertMany(data.coupons);
+        await mDb.collection('coupons').insertMany(data.coupons.map(cleanDoc));
       })() : Promise.resolve(),
       data.users && data.users.length > 0 ? (async () => {
         await mDb.collection('users').deleteMany({});
-        await mDb.collection('users').insertMany(data.users);
+        await mDb.collection('users').insertMany(data.users.map(cleanDoc));
       })() : Promise.resolve()
     ]).catch(err => {
       console.error('⚠️ MongoDB Atlas sync error:', err.message);

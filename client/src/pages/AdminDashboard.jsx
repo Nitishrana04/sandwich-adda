@@ -273,69 +273,72 @@ export default function AdminDashboard() {
   return (
     <div className="min-h-screen bg-gray-50 pb-24">
       
-      {/* Top Admin Header */}
-      <header className="bg-stone-900 text-white border-b border-stone-800 sticky top-0 z-30 shadow-md">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-600 rounded-xl flex items-center justify-center text-xl font-black">
+      {/* Main Container */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5">
+        
+        {/* Sleek Admin Operation Banner */}
+        <div className="bg-white rounded-3xl p-5 border border-stone-200/80 shadow-xs mb-6 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600"></div>
+
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-1">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 bg-gradient-to-tr from-stone-900 via-stone-800 to-orange-950 text-white rounded-2xl flex items-center justify-center text-2xl font-black border-2 border-orange-500/30 shadow-sm">
                 👨‍💼
               </div>
               <div>
-                <h1 className="text-base sm:text-lg font-black tracking-tight flex items-center gap-2">
-                  Sandwich Adda — Owner & Kitchen Dashboard
-                </h1>
-                <p className="text-xs text-stone-400">
-                  Rohta Road Kitchen Operations • Live Control Center
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base sm:text-lg font-black text-stone-900 tracking-tight">
+                    Sandwich Adda — Owner & Kitchen Operations
+                  </h1>
+                  <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-[10px] font-extrabold rounded-md uppercase tracking-wider">
+                    ADMIN
+                  </span>
+                </div>
+                <p className="text-xs text-stone-500 font-medium mt-0.5">
+                  Rohta Road Kitchen Operations • Live Order Dispatch & Control Center
                 </p>
               </div>
             </div>
 
             {/* Quick Store Open/Close Toggle */}
-            <div className="flex items-center gap-2 bg-stone-800 p-1.5 rounded-2xl border border-stone-700">
-              <span className="text-[11px] font-bold text-stone-400 px-2">
+            <div className="flex items-center gap-2 bg-stone-100 p-1.5 rounded-2xl border border-stone-200 self-start sm:self-auto">
+              <span className="text-[11px] font-bold text-stone-500 px-2">
                 Store Mode:
               </span>
               <button
                 onClick={() => handleToggleStoreMode('OPEN')}
-                className={`px-3 py-1 rounded-xl text-xs font-black transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
                   storeStatus?.overrideMode === 'OPEN'
-                    ? 'bg-emerald-500 text-white shadow-md'
-                    : 'text-stone-300 hover:text-white'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70'
                 }`}
               >
                 🟢 OPEN
               </button>
               <button
                 onClick={() => handleToggleStoreMode('CLOSED')}
-                className={`px-3 py-1 rounded-xl text-xs font-black transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
                   storeStatus?.overrideMode === 'CLOSED'
-                    ? 'bg-red-600 text-white shadow-md'
-                    : 'text-stone-300 hover:text-white'
+                    ? 'bg-red-600 text-white shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70'
                 }`}
               >
                 🔴 CLOSED
               </button>
               <button
                 onClick={() => handleToggleStoreMode('AUTO')}
-                className={`px-3 py-1 rounded-xl text-xs font-black transition-all ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
                   storeStatus?.overrideMode === 'AUTO'
-                    ? 'bg-amber-500 text-stone-900 shadow-md'
-                    : 'text-stone-300 hover:text-white'
+                    ? 'bg-amber-500 text-stone-900 shadow-sm'
+                    : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/70'
                 }`}
                 title="Follows Sat & Sun 5-10 PM schedule"
               >
                 ⏰ AUTO (Sat-Sun)
               </button>
             </div>
-
           </div>
         </div>
-      </header>
-
-      {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
         
         {/* KPI Summary Cards */}
         {stats && (

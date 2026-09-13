@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { ShoppingBag, Clock, Shield, Bike, User, LogOut, LogIn, MapPin } from 'lucide-react';
+import { ShoppingBag, Clock, Shield, Bike, User, LogOut, LogIn, MapPin, Store } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 
@@ -67,49 +67,56 @@ export default function Navbar() {
           </div>
 
           {/* Right Section: Role Switcher, User Badge, Cart */}
+          {/* Right Section: Context-Aware Navigation, Role Access, Profile, Cart */}
           <div className="flex items-center gap-2 sm:gap-3">
             
-            {/* Quick Panel Switcher Pills */}
-            <nav className="flex items-center bg-stone-800/90 border border-stone-700/80 p-1 rounded-xl text-xs font-semibold text-stone-400">
+            {/* If on Admin or Rider panel, show clean Storefront return button */}
+            {(currentPath.startsWith('/admin') || currentPath.startsWith('/rider')) ? (
               <Link
                 to="/"
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
-                  currentPath === '/' || currentPath.startsWith('/orders') || currentPath === '/cart'
-                    ? 'bg-orange-500 text-white font-bold shadow-xs'
-                    : 'hover:text-white'
-                }`}
-                title="Customer Portal"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-200 hover:text-white rounded-xl text-xs font-bold transition-all border border-stone-700"
+                title="Back to Customer Storefront"
               >
-                <User className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">User</span>
+                <Store className="w-3.5 h-3.5 text-orange-400" />
+                <span>Store</span>
               </Link>
-              
+            ) : (
+              /* On Customer Screens: Show "My Orders" link */
+              <Link
+                to="/orders"
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  currentPath.startsWith('/orders')
+                    ? 'bg-orange-500 text-white shadow-xs'
+                    : 'text-stone-300 hover:text-white hover:bg-stone-800'
+                }`}
+              >
+                <span>My Orders</span>
+              </Link>
+            )}
+
+            {/* Privileged Shortcut: Only show Admin button if logged-in user is ADMIN and NOT currently on /admin */}
+            {user?.role === 'ADMIN' && !currentPath.startsWith('/admin') && (
               <Link
                 to="/admin"
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
-                  currentPath.startsWith('/admin')
-                    ? 'bg-orange-500 text-white font-bold shadow-xs'
-                    : 'hover:text-white'
-                }`}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600/20 text-orange-400 hover:bg-orange-600/30 border border-orange-500/40 rounded-xl text-xs font-extrabold transition-all"
                 title="Admin Dashboard"
               >
                 <Shield className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Admin</span>
+                <span>Admin</span>
               </Link>
+            )}
 
+            {/* Privileged Shortcut: Only show Delivery button if logged-in user is RIDER and NOT currently on /rider */}
+            {user?.role === 'RIDER' && !currentPath.startsWith('/rider') && (
               <Link
                 to="/rider"
-                className={`flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg transition-all ${
-                  currentPath.startsWith('/rider')
-                    ? 'bg-orange-500 text-white font-bold shadow-xs'
-                    : 'hover:text-white'
-                }`}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-600/20 text-orange-400 hover:bg-orange-600/30 border border-orange-500/40 rounded-xl text-xs font-extrabold transition-all"
                 title="Delivery Partner Portal"
               >
                 <Bike className="w-3.5 h-3.5" />
-                <span className="hidden xs:inline">Delivery</span>
+                <span>Rider</span>
               </Link>
-            </nav>
+            )}
 
             {/* User Profile / Logout */}
             {user ? (
@@ -137,7 +144,7 @@ export default function Navbar() {
             ) : (
               <Link
                 to="/login"
-                className="hidden xs:flex items-center gap-1 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold rounded-xl transition-colors border border-stone-700"
+                className="flex items-center gap-1 px-3 py-1.5 bg-stone-800 hover:bg-stone-700 text-stone-300 text-xs font-bold rounded-xl transition-colors border border-stone-700"
               >
                 <LogIn className="w-3.5 h-3.5 text-orange-400" />
                 <span>Login</span>

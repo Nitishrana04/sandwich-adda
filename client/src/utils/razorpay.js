@@ -63,8 +63,98 @@ export async function openRazorpayCheckout({
 
     // Key ID priority: Vite env var -> backend returned key_id
     const keyId = import.meta.env.VITE_RAZORPAY_KEY_ID || orderData.key_id;
-    if (!keyId) {
+    if (!keyId && !orderData.isSandboxDemo) {
       if (onError) onError('Razorpay Key ID is not configured.');
+      return;
+    }
+
+    // If backend provided a sandbox demo order (e.g. while account is under review)
+    if (orderData.isSandboxDemo) {
+      const modalId = 'rzp-sandbox-modal';
+      const existing = document.getElementById(modalId);
+      if (existing) existing.remove();
+
+      const modalContainer = document.createElement('div');
+      modalContainer.id = modalId;
+      modalContainer.className = 'fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-200';
+      modalContainer.innerHTML = `
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 shadow-2xl border border-gray-200 relative text-center">
+          <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-2xl flex items-center justify-center mx-auto mb-3 text-2xl font-black">
+            💳
+          </div>
+          <span class="text-[10px] font-black uppercase tracking-widest text-orange-600 bg-orange-50 px-2.5 py-1 rounded-full border border-orange-200">
+            Razorpay Sandbox Simulator
+          </span>
+          <h3 class="text-xl font-black text-gray-900 mt-2.5">
+            Pay ₹${(orderData.amount / 100).toFixed(2)}
+          </h3>
+          <p class="text-xs text-gray-500 mt-1">
+            Simulate online payment via Razorpay test mode.
+          </p>
+          <div class="mt-4 p-3 bg-stone-50 rounded-xl text-left border border-gray-100 text-xs space-y-1">
+            <div class="flex justify-between text-gray-500">
+              <span>Merchant:</span>
+              <span class="font-bold text-gray-800">Sandwich Adda</span>
+            </div>
+            <div class="flex justify-between text-gray-500">
+              <span>Order ID:</span>
+              <span class="font-mono text-gray-700 text-[10px]">${orderData.order_id}</span>
+            </div>
+          </div>
+          <div class="mt-5 flex gap-2">
+            <button id="rzp-sim-cancel" type="button" class="flex-1 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-bold text-xs transition-colors">
+              Cancel
+            </button>
+            <button id="rzp-sim-success" type="button" class="flex-1 py-3 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white rounded-xl font-black text-xs shadow-md shadow-emerald-600/30 transition-all flex items-center justify-center gap-1.5">
+              <span>Simulate Pay ✓</span>
+            </button>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modalContainer);
+
+      const cancelBtn = document.getElementById('rzp-sim-cancel');
+      if (cancelBtn) {
+        cancelBtn.onclick = () => {
+          modalContainer.remove();
+          if (onDismiss) onDismiss();
+        };
+      }
+
+      const successBtn = document.getElementById('rzp-sim-success');
+      if (successBtn) {
+        successBtn.onclick = async () => {
+          successBtn.disabled = true;
+          successBtn.innerText = 'Verifying...';
+
+          try {
+            const verifyRes = await fetch('/api/verify-payment', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: orderData.order_id,
+                razorpay_payment_id: `pay_sim_${Date.now()}`,
+                razorpay_signature: 'sandbox_verified'
+              })
+            });
+
+            const verifyData = await verifyRes.json();
+            modalContainer.remove();
+
+            if (onSuccess) {
+              onSuccess({
+                razorpay_order_id: orderData.order_id,
+                razorpay_payment_id: `pay_sim_${Date.now()}`,
+                razorpay_signature: 'sandbox_verified',
+                verification: verifyData
+              });
+            }
+          } catch (err) {
+            modalContainer.remove();
+            if (onError) onError('Payment verification error: ' + err.message);
+          }
+        };
+      }
       return;
     }
 

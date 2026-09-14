@@ -304,6 +304,26 @@
       "address": "Near Rohta bypass, Meerut",
       "role": "CUSTOMER",
       "createdAt": "2026-09-13T13:06:21.957Z"
+    },
+    {
+      "id": "usr_cust_1789348311387",
+      "phone": "7983791903",
+      "email": "",
+      "name": "Riya",
+      "password": "Sargamstaan123@#",
+      "address": "Rohta Road, Meerut, Uttar Pradesh",
+      "role": "CUSTOMER",
+      "createdAt": "2026-09-14T01:11:51.387Z"
+    },
+    {
+      "id": "usr_cust_1789402370948",
+      "phone": "8077676400",
+      "email": "naresh@gmail.com",
+      "name": "Naresh Rana",
+      "password": "123456",
+      "address": "",
+      "role": "CUSTOMER",
+      "createdAt": "2026-09-14T16:12:50.948Z"
     }
   ],
   "orders": [

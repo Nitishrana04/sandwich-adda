@@ -16,6 +16,8 @@ import CustomerOrders from './pages/CustomerOrders';
 import AdminDashboard from './pages/AdminDashboard';
 import RiderPortal from './pages/RiderPortal';
 import CustomerProfile from './pages/CustomerProfile';
+import LegalPolicies from './pages/LegalPolicies';
+import Footer from './components/Footer';
 
 function AppContent() {
   const { user } = useAuth();
@@ -118,10 +120,15 @@ function AppContent() {
             }
           />
 
+          {/* Public Legal Policies & Compliance for Razorpay */}
+          <Route path="/policies" element={<LegalPolicies />} />
+
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </div>
+
+      <Footer />
     </div>
   );
 }

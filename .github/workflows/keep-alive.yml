@@ -1,0 +1,16 @@
+name: Keep Render Server Awake 🥪
+
+on:
+  schedule:
+    # Runs every 12 minutes to keep the Render Free instance alive
+    - cron: '*/12 * * * *'
+  workflow_dispatch:
+
+jobs:
+  keep-alive:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Live Sandwich Adda Web Service
+        run: |
+          echo "Pinging https://sandwich-adda.onrender.com to prevent sleep..."
+          curl -s -f -m 30 "https://sandwich-adda.onrender.com/api/status" || echo "Ping dispatched"

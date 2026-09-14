@@ -565,6 +565,18 @@ async function startServer() {
   server.listen(PORT, () => {
     console.log(`🚀 Sandwich Adda Server running on http://localhost:${PORT}`);
     console.log(`🥪 Weekend Schedule: Saturday & Sunday, 5:00 PM – 10:00 PM IST`);
+
+    // Render Free Tier Keep-Alive: Ping external URL every 10 minutes to prevent sleep
+    const liveUrl = process.env.RENDER_EXTERNAL_URL || 'https://sandwich-adda.onrender.com';
+    const PING_INTERVAL = 10 * 60 * 1000; // 10 minutes
+    setInterval(async () => {
+      try {
+        const res = await fetch(`${liveUrl}/api/status`);
+        console.log(`⏱️ Keep-alive ping sent to ${liveUrl} (Status: ${res.status}) - Staying awake`);
+      } catch (err) {
+        console.warn('Keep-alive ping warning:', err.message);
+      }
+    }, PING_INTERVAL);
   });
 }
 startServer();

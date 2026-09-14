@@ -308,6 +308,61 @@
   ],
   "orders": [
     {
+      "id": "ord_1789321905953_9p1vx",
+      "orderNumber": "#SA1030",
+      "customerId": "usr_cust_1789317779892",
+      "customerName": "Dhruv",
+      "customerPhone": "8077676400",
+      "deliveryAddress": "104, Rohta Road, Meerut, Uttar Pradesh - 250001",
+      "addressType": "Home",
+      "houseNo": "1024",
+      "landmark": "",
+      "latitude": 28.985941666666665,
+      "longitude": 77.664701,
+      "customerLocation": {
+        "lat": 28.985941666666665,
+        "lng": 77.664701
+      },
+      "instructions": "",
+      "cookingNote": "",
+      "items": [
+        {
+          "id": "menu_1",
+          "name": "Paneer Tikka Grilled Sandwich",
+          "price": 109,
+          "quantity": 1,
+          "image": "https://images.unsplash.com/photo-1528735602780-2552fd46c7af?w=600&auto=format&fit=crop&q=80"
+        }
+      ],
+      "subtotal": 109,
+      "deliveryFee": 30,
+      "discount": 0,
+      "totalAmount": 139,
+      "couponCode": null,
+      "paymentMethod": "ONLINE",
+      "paymentStatus": "PAID",
+      "razorpayOrderId": "order_TbbqvuvvYQOAqE",
+      "razorpayPaymentId": "pay_TbbsO36MrzzfbC",
+      "razorpaySignature": "d87eb9f55a3cf98c0cdfcd9c1a12e41dd6925d06655fe5871a06c66b1cd0392d",
+      "status": "ACCEPTED",
+      "deliveryOtp": "8913",
+      "assignedRiderId": null,
+      "assignedRiderName": null,
+      "createdAt": "2026-09-13T17:51:45.953Z",
+      "statusHistory": [
+        {
+          "status": "PLACED",
+          "time": "05:51 PM",
+          "note": "Order placed via ONLINE. Kitchen received order."
+        },
+        {
+          "status": "ACCEPTED",
+          "time": "05:56 PM",
+          "note": "Sandwich Adda kitchen accepted order"
+        }
+      ]
+    },
+    {
       "id": "ord_1789319315014_5oyys",
       "orderNumber": "#SA1029",
       "customerId": "usr_cust_1789317779892",

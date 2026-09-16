@@ -280,6 +280,7 @@ export function getStoreStatus() {
     reason,
     overrideMode: settings.overrideMode,
     schedule: settings.schedule,
+    openingHours: settings.schedule || 'Saturday & Sunday, 5:00 PM – 10:00 PM IST',
     settings: {
       storeName: settings.storeName,
       tagline: settings.tagline,
@@ -576,6 +577,19 @@ export function updateOrderStatus(orderId, newStatus, extra = {}) {
 
   let note = extra.note || `Status updated to ${newStatus}`;
 
+  if (extra.riderId) {
+    const rider = getRider(extra.riderId);
+    if (rider) {
+      order.assignedRiderId = rider.id;
+      order.assignedRiderName = rider.name;
+      rider.status = 'ON_DELIVERY';
+      rider.activeOrderId = order.id;
+      if (newStatus === 'RIDER_ASSIGNED') {
+        note = `Delivery partner ${rider.name} assigned to deliver.`;
+      }
+    }
+  }
+
   if (newStatus === 'ACCEPTED') {
     note = 'Sandwich Adda kitchen accepted order';
   } else if (newStatus === 'PREPARING') {
@@ -583,15 +597,8 @@ export function updateOrderStatus(orderId, newStatus, extra = {}) {
   } else if (newStatus === 'READY_FOR_PICKUP') {
     note = 'Order packed hot and ready for pickup 🥪';
   } else if (newStatus === 'RIDER_ASSIGNED') {
-    if (extra.riderId) {
-      const rider = getRider(extra.riderId);
-      if (rider) {
-        order.assignedRiderId = rider.id;
-        order.assignedRiderName = rider.name;
-        rider.status = 'ON_DELIVERY';
-        rider.activeOrderId = order.id;
-        note = `Delivery partner ${rider.name} assigned to deliver.`;
-      }
+    if (!order.assignedRiderName) {
+      note = 'Delivery partner assigned to deliver.';
     }
   } else if (newStatus === 'PICKED_UP') {
     note = 'Delivery partner picked up food from Sandwich Adda';
@@ -705,6 +712,8 @@ export function getStats() {
   return {
     todaySales,
     totalSales,
+    totalRevenue: totalSales,
+    totalOrders: orders.length,
     totalOrdersCount: orders.length,
     todayOrdersCount: todayOrders.length,
     totalCustomers: customerPhones.size || 12,

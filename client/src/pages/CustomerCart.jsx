@@ -196,34 +196,6 @@ export default function CustomerCart() {
     executeOrderPlacement({ paymentMethod: 'COD', paymentStatus: 'PENDING' });
   };
 
-  const handleTestRazorpay = () => {
-    setErrorMsg('');
-    setSuccessMsg('');
-    setIsSubmitting(true);
-
-    openRazorpayCheckout({
-      amountInPaise: 100, // ₹1.00 test
-      currency: 'INR',
-      receipt: `test_rcpt_${Date.now()}`,
-      prefill: {
-        name: customerInfo.name || 'Test User',
-        contact: customerInfo.phone || '9999999999'
-      },
-      onSuccess: (data) => {
-        setIsSubmitting(false);
-        setSuccessMsg(`Payment Verified! ID: ${data.razorpay_payment_id}`);
-      },
-      onError: (err) => {
-        setIsSubmitting(false);
-        setErrorMsg(err);
-      },
-      onDismiss: () => {
-        setIsSubmitting(false);
-        setErrorMsg('Test checkout was cancelled.');
-      }
-    });
-  };
-
   if (items.length === 0) {
     return (
       <div className="min-h-[80vh] flex flex-col items-center justify-center p-6 text-center">
@@ -681,18 +653,6 @@ export default function CustomerCart() {
                 </>
               )}
             </button>
-
-            {/* Developer Sandbox Test Button */}
-            <div className="mt-3 pt-3 border-t border-dashed border-gray-200 text-center">
-              <button
-                type="button"
-                onClick={handleTestRazorpay}
-                disabled={isSubmitting}
-                className="text-[11px] text-gray-500 hover:text-orange-600 font-bold transition-colors inline-flex items-center gap-1 hover:underline"
-              >
-                <span>🧪 Test Razorpay Standard Checkout Modal (₹1.00)</span>
-              </button>
-            </div>
           </div>
 
         </div>

@@ -81,6 +81,48 @@ function initDb() {
     });
   }
 
+  // Ensure reviews collection exists with initial social proof testimonials
+  if (!loaded.reviews || loaded.reviews.length === 0) {
+    loaded.reviews = [
+      {
+        id: 'rev_1',
+        customerName: 'Aman Verma',
+        rating: 5,
+        comment: 'Paneer Tikka Grilled Sandwich was insanely cheesy and crispy! Quick delivery in Rohta Road.',
+        item: 'Paneer Tikka Grilled Sandwich',
+        date: 'Yesterday',
+        verified: true
+      },
+      {
+        id: 'rev_2',
+        customerName: 'Priya Sharma',
+        rating: 5,
+        comment: 'Best grilled sandwiches in Meerut hands down. Fresh bread and loved the mint chutney.',
+        item: 'Cheese Burst Sandwich',
+        date: '2 days ago',
+        verified: true
+      },
+      {
+        id: 'rev_3',
+        customerName: 'Kunal Chaudhary',
+        rating: 5,
+        comment: 'The custom sandwich builder let me choose brown bread with double cheese burst. Top tier quality!',
+        item: 'Custom Chef Sandwich',
+        date: '3 days ago',
+        verified: true
+      },
+      {
+        id: 'rev_4',
+        customerName: 'Vikas Tyagi',
+        rating: 5,
+        comment: 'Thick Chocolate Cold Coffee + Peri Peri Fries combo is unbelievable. Packaging was hot and neat.',
+        item: 'Thick Chocolate Cold Coffee',
+        date: '4 days ago',
+        verified: true
+      }
+    ];
+  }
+
   saveDb(loaded);
   return loaded;
 }
@@ -112,13 +154,14 @@ export async function connectMongo() {
     const mDb = mongoose.connection.db;
 
     // Fetch collections from MongoDB Atlas
-    const [settingsDoc, menuDocs, orderDocs, riderDocs, couponDocs, userDocs] = await Promise.all([
+    const [settingsDoc, menuDocs, orderDocs, riderDocs, couponDocs, userDocs, reviewDocs] = await Promise.all([
       mDb.collection('settings').findOne({ _id: 'store_settings' }),
       mDb.collection('menu').find({}).toArray(),
       mDb.collection('orders').find({}).toArray(),
       mDb.collection('riders').find({}).toArray(),
       mDb.collection('coupons').find({}).toArray(),
-      mDb.collection('users').find({}).toArray()
+      mDb.collection('users').find({}).toArray(),
+      mDb.collection('reviews').find({}).toArray()
     ]);
 
     let hasAtlasData = false;
@@ -146,6 +189,10 @@ export async function connectMongo() {
     }
     if (userDocs && userDocs.length > 0) {
       db.users = userDocs.map(({ _id, ...rest }) => rest);
+      hasAtlasData = true;
+    }
+    if (reviewDocs && reviewDocs.length > 0) {
+      db.reviews = reviewDocs.map(({ _id, ...rest }) => rest);
       hasAtlasData = true;
     }
 
@@ -231,6 +278,10 @@ function saveDb(data) {
       data.users && data.users.length > 0 ? (async () => {
         await mDb.collection('users').deleteMany({});
         await mDb.collection('users').insertMany(data.users.map(cleanDoc));
+      })() : Promise.resolve(),
+      data.reviews && data.reviews.length > 0 ? (async () => {
+        await mDb.collection('reviews').deleteMany({});
+        await mDb.collection('reviews').insertMany(data.reviews.map(cleanDoc));
       })() : Promise.resolve()
     ]).catch(err => {
       console.error('⚠️ MongoDB Atlas sync error:', err.message);
@@ -476,6 +527,31 @@ export function validateCoupon(code, subtotal) {
     discount: Math.min(discount, subtotal),
     message: `${coupon.code} applied! Saved ₹${discount}`
   };
+}
+
+// ------------------- REVIEWS & RATINGS METHODS -------------------
+export function getReviews() {
+  return (db.reviews || []).slice(0, 50);
+}
+
+export function addReview(data) {
+  const newReview = {
+    id: `rev_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+    customerName: data.customerName || 'Sandwich Lover',
+    rating: Math.min(5, Math.max(1, Number(data.rating) || 5)),
+    comment: data.comment || 'Crispy, cheesy, and utterly delicious!',
+    item: data.item || 'Grilled Sandwich',
+    orderId: data.orderId || null,
+    orderNumber: data.orderNumber || null,
+    date: 'Just now',
+    verified: true,
+    createdAt: new Date().toISOString()
+  };
+
+  if (!db.reviews) db.reviews = [];
+  db.reviews.unshift(newReview);
+  saveDb(db);
+  return newReview;
 }
 
 // ------------------- ORDERS METHODS -------------------

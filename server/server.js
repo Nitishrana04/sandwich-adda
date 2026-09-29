@@ -567,6 +567,30 @@ app.delete('/api/admin/users/:id', (req, res) => {
   }
 });
 
+// 8. Customer Reviews & Ratings
+app.get('/api/reviews', (req, res) => {
+  try {
+    const reviews = db.getReviews();
+    res.json(reviews);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/reviews', (req, res) => {
+  try {
+    const { rating, comment, customerName, item, orderId, orderNumber } = req.body;
+    if (!rating) {
+      return res.status(400).json({ error: 'Rating is required' });
+    }
+    const newReview = db.addReview({ rating, comment, customerName, item, orderId, orderNumber });
+    io.emit('review:new', newReview);
+    res.status(201).json({ success: true, review: newReview });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Serve static frontend build in production if present
 const clientDist = path.join(__dirname, '..', 'client', 'dist');
 app.use(express.static(clientDist));

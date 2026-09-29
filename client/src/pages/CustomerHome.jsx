@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { Search, Star, Sparkles, Clock, AlertCircle, ShoppingBag, Plus, Minus, Check, Flame, Mic, MicOff, Tag } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { useSocket } from '../context/SocketContext';
+import SandwichBuilderModal from '../components/SandwichBuilderModal';
+import ReviewsSection from '../components/ReviewsSection';
 
 export default function CustomerHome() {
   const { items: cartItems, addToCart, updateQuantity, subtotal, totalItemCount } = useCart();
@@ -15,6 +17,7 @@ export default function CustomerHome() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [smartFilter, setSmartFilter] = useState('ALL');
   const [isListening, setIsListening] = useState(false);
+  const [showBuilderModal, setShowBuilderModal] = useState(false);
 
   const fetchMenu = async () => {
     try {
@@ -163,6 +166,21 @@ export default function CustomerHome() {
                   <span>🚀 Express Local Delivery</span>
                 </div>
               </div>
+
+              {/* DIY Sandwich Button */}
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowBuilderModal(true)}
+                  className="px-5 py-3 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 active:scale-98 text-white rounded-2xl font-black text-xs sm:text-sm shadow-xl shadow-orange-600/30 transition-all flex items-center gap-2 cursor-pointer"
+                >
+                  <span className="text-base">🧑‍🍳</span>
+                  <span>Make Your Own Sandwich →</span>
+                  <span className="bg-white/20 px-2 py-0.5 rounded-full text-[10px] uppercase tracking-wider font-extrabold">
+                    From ₹99
+                  </span>
+                </button>
+              </div>
             </div>
 
             {/* Decorative background image */}
@@ -177,6 +195,40 @@ export default function CustomerHome() {
           </div>
         </div>
       </section>
+
+      {/* Feature Banner: Make Your Own Sandwich */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-4">
+        <div
+          onClick={() => setShowBuilderModal(true)}
+          className="bg-gradient-to-r from-amber-500 via-orange-500 to-orange-600 rounded-3xl p-5 sm:p-6 text-white shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 cursor-pointer hover:shadow-orange-500/25 transition-all hover:scale-[1.01]"
+        >
+          <div className="flex items-center gap-4">
+            <div className="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center text-3xl shadow-inner flex-shrink-0">
+              🥪
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="bg-black/20 text-white text-[10px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full">
+                  Sandwich Studio
+                </span>
+                <span className="text-xs font-bold text-amber-100">Custom Chef Mode</span>
+              </div>
+              <h3 className="text-base sm:text-lg font-black text-white mt-1">
+                Design Your Dream Grilled Sandwich
+              </h3>
+              <p className="text-xs text-white/90">
+                Pick your bread, fresh fillings, double cheese burst & signature sauces. Custom grilled to order!
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            className="w-full sm:w-auto px-5 py-2.5 bg-white text-orange-600 hover:bg-orange-50 rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1 flex-shrink-0 cursor-pointer"
+          >
+            <span>Start Building ➔</span>
+          </button>
+        </div>
+      </div>
 
       {/* Main Content Area */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4">
@@ -549,7 +601,17 @@ export default function CustomerHome() {
           </div>
         )}
 
+        {/* Customer Reviews & Community Love Section */}
+        <ReviewsSection />
+
       </main>
+
+      {/* Interactive Custom Sandwich Studio Modal */}
+      <SandwichBuilderModal
+        isOpen={showBuilderModal}
+        onClose={() => setShowBuilderModal(false)}
+        onAddToCart={addToCart}
+      />
 
       {/* Floating Bottom Cart Pill (Visible when items in cart) */}
       {totalItemCount > 0 && (

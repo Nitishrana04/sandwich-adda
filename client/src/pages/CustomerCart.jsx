@@ -283,6 +283,11 @@ export default function CustomerCart() {
                           {item.name}
                         </h4>
                       </div>
+                      {item.isCustom && item.customDetails && (
+                        <p className="text-[10px] text-amber-700 bg-amber-50 rounded-md px-1.5 py-0.5 mt-1 font-medium leading-tight line-clamp-2 border border-amber-200/60">
+                          {item.customDetails.bread} • {item.customDetails.fillings} • {item.customDetails.cheese} • {item.customDetails.sauces}
+                        </p>
+                      )}
                       <p className="text-xs font-extrabold text-gray-800 mt-0.5">
                         ₹{item.price}
                       </p>

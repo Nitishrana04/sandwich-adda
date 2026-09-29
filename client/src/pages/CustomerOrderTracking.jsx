@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, Clock, Phone, MapPin, Bike, ChefHat, Package, Check, ArrowLeft, RefreshCw, KeyRound, AlertCircle, FileText, Printer, Navigation, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, Clock, Phone, MapPin, Bike, ChefHat, Package, Check, ArrowLeft, RefreshCw, KeyRound, AlertCircle, FileText, Printer, Navigation, ShieldCheck, Star, Send } from 'lucide-react';
 import { useSocket } from '../context/SocketContext';
 import { useCart } from '../context/CartContext';
 import LiveDeliveryMap from '../components/LiveDeliveryMap';
@@ -40,6 +40,37 @@ export default function CustomerOrderTracking() {
   const [error, setError] = useState('');
   const [showInvoiceModal, setShowInvoiceModal] = useState(false);
   const [liveRiderLocation, setLiveRiderLocation] = useState(null);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewComment, setReviewComment] = useState('');
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
+  const [submittingReview, setSubmittingReview] = useState(false);
+
+  const handleSubmitOrderReview = async (e) => {
+    e.preventDefault();
+    if (!reviewComment.trim()) return;
+    setSubmittingReview(true);
+    try {
+      const res = await fetch('/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          customerName: order.customerName || 'Sandwich Adda Customer',
+          rating: reviewRating,
+          comment: reviewComment.trim(),
+          item: order.items?.[0]?.name || 'Grilled Sandwich',
+          orderId: order.id,
+          orderNumber: order.orderNumber
+        })
+      });
+      if (res.ok) {
+        setReviewSubmitted(true);
+      }
+    } catch (e) {
+      console.error('Review submit error:', e);
+    } finally {
+      setSubmittingReview(false);
+    }
+  };
 
   const getMapProgress = (status) => {
     switch (status) {
@@ -231,6 +262,68 @@ export default function CustomerOrderTracking() {
               {order.deliveryOtp}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Delivered: Post-Delivery Rating & Review Card */}
+      {isDelivered && (
+        <div className="mb-6 bg-gradient-to-r from-emerald-600 via-teal-600 to-green-600 text-white p-5 sm:p-6 rounded-3xl shadow-xl relative overflow-hidden animate-in fade-in">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="w-10 h-10 rounded-2xl bg-white/20 flex items-center justify-center text-xl">
+              🥪
+            </div>
+            <div>
+              <h3 className="text-base font-black">How was your Sandwich Adda experience?</h3>
+              <p className="text-xs text-emerald-100">Your feedback helps fellow food lovers and our chef!</p>
+            </div>
+          </div>
+
+          {reviewSubmitted ? (
+            <div className="bg-white/20 backdrop-blur-xs rounded-2xl p-4 text-center text-xs font-bold flex items-center justify-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-200" />
+              <span>Thank you! Your review was published on Sandwich Adda! 🎉</span>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmitOrderReview} className="space-y-3 bg-black/20 backdrop-blur-xs p-4 rounded-2xl border border-white/10">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-emerald-100">Select Rating:</span>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className="p-0.5 cursor-pointer hover:scale-125 transition-transform"
+                    >
+                      <Star
+                        className={`w-5 h-5 ${
+                          star <= reviewRating ? 'fill-amber-300 text-amber-300' : 'text-white/40'
+                        }`}
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <input
+                type="text"
+                required
+                value={reviewComment}
+                onChange={(e) => setReviewComment(e.target.value)}
+                placeholder="Crispy, hot and tasty? Tell us in 1 line..."
+                className="w-full px-3.5 py-2.5 bg-white/15 border border-white/20 rounded-xl text-xs text-white placeholder-white/60 focus:outline-hidden focus:border-white"
+              />
+
+              <button
+                type="submit"
+                disabled={submittingReview}
+                className="w-full py-2.5 bg-white text-emerald-700 hover:bg-emerald-50 rounded-xl text-xs font-black shadow-md flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-60 transition-colors"
+              >
+                <Send className="w-3.5 h-3.5" />
+                <span>{submittingReview ? 'Submitting...' : 'Submit Rating ⭐'}</span>
+              </button>
+            </form>
+          )}
         </div>
       )}
 
